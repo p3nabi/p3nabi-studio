@@ -37,7 +37,25 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 @media(max-width:450px){.folderGrid{grid-template-columns:1fr}.legend{grid-template-columns:1fr}.legendTitle{grid-column:auto}.calDay{min-height:54px}.dayNum{width:22px;height:22px}.calendar{border-radius:12px}}
 
 .calendarWrap{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px}.calendarToolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}.calendarToolbar strong{font-size:15px;min-width:140px;text-align:center}.calendarWeek,.calendarGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.calendarWeek{margin-bottom:4px}.calendarWeek span{font-size:10px;color:#999;text-align:center;padding:4px}.calDay{min-height:58px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px;cursor:pointer;text-align:left}.calDay:hover{background:#faf9ff}.calDay.muted{opacity:.35}.calDay.selected{box-shadow:0 0 0 2px #7c5cff}.calNum{font-weight:800;font-size:11px}.calDot{width:4px;height:4px;border-radius:50%;background:#7c5cff;display:inline-block;margin:0 1px}.agendaPanel{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;max-height:180px;overflow:auto}.agendaItem{padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}.agendaTitle{font-weight:750}.agendaMeta{font-size:11px;color:#999;margin-top:3px}.editProfileBtn{margin-left:auto;border:0;background:#f1eff8;border-radius:9px;padding:7px 10px;cursor:pointer}.teamTop{align-items:center}.teamCard{position:relative}.profileEditBox{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.profileEditBox input{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:10px;margin:4px 0 8px}.profileEditBox button{border:0;border-radius:10px;padding:9px 12px;cursor:pointer}.profileEditBox .save{background:#17131f;color:#fff}.profileEditBox .cancel{background:#eee;margin-left:6px}
-@media(max-width:700px){.calendarWrap{padding:9px}.calDay{min-height:48px;padding:5px}.calendarToolbar strong{min-width:110px}.teamGrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:430px){.calDay{min-height:42px}.calNum{font-size:10px}}\n</style>
+@media(max-width:700px){.calendarWrap{padding:9px}.calDay{min-height:48px;padding:5px}.calendarToolbar strong{min-width:110px}.teamGrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:430px){.calDay{min-height:42px}.calNum{font-size:10px}}\n
+/* COMPACT MONTH PROJECT VIEW */
+#projectView.compactProjectView{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+#projectView.compactProjectView .folderViewHead{grid-column:1/-1;margin:0 0 2px}
+#projectView.compactProjectView .day{padding:0;margin:0;border:1px solid var(--line);background:linear-gradient(145deg,#15151d,#111118);border-radius:14px;overflow:hidden;min-width:0}
+#projectView.compactProjectView .dateLine{padding:10px 12px;border-bottom:1px solid var(--line);background:#14131b}
+#projectView.compactProjectView .date{font-size:13px;margin:0;font-weight:800;letter-spacing:-.2px}
+#projectView.compactProjectView .dateMeta{font-size:10px}
+#projectView.compactProjectView .taskCard{border:0;border-radius:0;background:transparent}
+#projectView.compactProjectView .task{gap:8px;padding:8px 10px;min-height:45px}
+#projectView.compactProjectView .check{width:20px;height:20px;border-width:2px}
+#projectView.compactProjectView .check.done:after{font-size:12px}
+#projectView.compactProjectView .title{font-size:11px;line-height:1.15;min-width:0}
+#projectView.compactProjectView .taskSub{font-size:9px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#projectView.compactProjectView .actions{gap:0;margin-left:auto}
+#projectView.compactProjectView .actionBtn{padding:4px 5px;font-size:11px}
+@media(max-width:800px){#projectView.compactProjectView{grid-template-columns:1fr}}
+
+</style>
 </head>
 <body>
 <div id="login" class="modal">
@@ -308,7 +326,7 @@ document.querySelectorAll(".taskTab").forEach(btn=>{
 });
 
 function openProject(month){
- currentProject=month;$("folderHome").classList.add("hide");const root=$("projectView");root.classList.remove("hide");
+ currentProject=month;$("folderHome").classList.add("hide");const root=$("projectView");root.classList.remove("hide");root.classList.add("compactProjectView");
  const items=(folderData()[month]||[]).slice().sort((a,b)=>(a.task_date||"").localeCompare(b.task_date||"") || String(a.batch_label||"").localeCompare(String(b.batch_label||"")));
  const done=items.filter(t=>t.completed).length;
  root.innerHTML=`<div class="folderViewHead"><div><div class="eyebrow">KERJAAN BULANAN</div><div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div><div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai</div></div><button class="backBtn" id="backProjects">← Kerjaan</button></div>`;
@@ -330,7 +348,7 @@ function openProject(month){
    root.appendChild(sec);
  });
 }
-function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("folderHome").classList.remove("hide");renderFolders()}
+function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("projectView").classList.remove("compactProjectView");$("folderHome").classList.remove("hide");renderFolders()}
 
 function renderTeam(){
  const box=$("teamGrid");
