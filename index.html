@@ -106,6 +106,41 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 @media(max-width:1200px){#projectView.compactProjectView{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:16px !important}}
 @media(max-width:900px){#projectView.compactProjectView{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px !important}}
 @media(max-width:600px){#projectView.compactProjectView{grid-template-columns:1fr !important;gap:12px !important}}
+
+
+/* MULTI-CATEGORY ADD TASK MODAL */
+.taskModalBox{width:min(720px,100%) !important;max-height:88vh;overflow:auto}
+.taskModalHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
+.taskModalHead .actionBtn{font-size:20px;padding:2px 7px}
+.taskModalTop{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.taskModalTop label{display:block;margin-bottom:5px}
+.taskCategoryHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;margin-bottom:9px}
+.taskCategoryHead b{display:block;font-size:12px}
+.taskCategoryHead span{display:block;color:#77737f;font-size:10px;margin-top:3px}
+.smallBtn{padding:8px 10px !important;font-size:11px !important;white-space:nowrap}
+.taskRows{display:flex;flex-direction:column;gap:8px}
+.taskInputRow{display:grid;grid-template-columns:1.35fr 1fr 1fr 34px;gap:7px;align-items:end;padding:10px;background:#111118;border:1px solid #292735;border-radius:12px}
+.taskInputRow label{display:block;margin-bottom:5px;font-size:10px}
+.taskInputRow input,.taskInputRow select{padding:9px 10px;font-size:11px}
+.removeTaskRow{height:38px;border:1px solid #3a2a30;background:#1a1216;color:#ff8188;border-radius:9px;font-size:16px}
+.removeTaskRow:disabled{opacity:.25;cursor:not-allowed}
+.monthAddWrap{margin-left:auto}
+.monthAddBtn{border:1px solid #6e3bb1;background:linear-gradient(90deg,#6e35a8,#9d55ff);color:#fff;border-radius:9px;padding:8px 11px;font-size:11px;font-weight:800}
+.dayAddBtn{border:0;background:transparent;color:#b36bff;font-size:10px;font-weight:800;padding:3px 0;margin-left:8px}
+.dayAddBtn:hover{text-decoration:underline}
+.compactDateActions{display:flex;align-items:center;gap:4px}
+@media(max-width:700px){
+  .taskModalTop{grid-template-columns:1fr}
+  .taskInputRow{grid-template-columns:1fr 1fr}
+  .taskInputRow .taskTitleField{grid-column:1/-1}
+  .removeTaskRow{grid-column:2;justify-self:end;width:34px}
+}
+@media(max-width:450px){
+  .taskCategoryHead{align-items:flex-start;flex-direction:column}
+  .taskInputRow{grid-template-columns:1fr}
+  .taskInputRow .taskTitleField{grid-column:auto}
+  .removeTaskRow{grid-column:auto;width:100%}
+}
 </style>
 </head>
 <body>
@@ -220,13 +255,42 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 <label>PIC</label><select id="editPic" class="picSelect"></select>
 <div id="editErr" class="err"></div><div class="row"><button id="editCancel" class="pill">Batal</button><button id="editSave" class="primary">Simpan</button></div></div></div>
 
-<div id="taskModal" class="modal hide"><div class="box"><h2 style="margin:0 0 16px">Tambah pekerjaan</h2>
-<label>Tanggal</label><input id="newDate" type="date">
-<label>Penanda tanggal (opsional)</label><input id="newLabel" placeholder="Contoh: 2">
-<label>Nama pekerjaan</label><input id="newTitle" placeholder="Contoh: Upload TikTok">
-<label>Nama project</label><input id="newProject" placeholder="Contoh: MV Ecko Show">
-<label>PIC</label><select id="newPic" class="picSelect"></select>
-<div id="taskErr" class="err"></div><div class="row"><button id="taskCancel" class="pill">Batal</button><button id="taskSave" class="primary">Tambah</button></div></div></div>
+<div id="taskModal" class="modal hide"><div class="box taskModalBox">
+  <div class="taskModalHead">
+    <div>
+      <h2 style="margin:0">Tambah pekerjaan</h2>
+      <div class="muted" style="font-size:11px;margin-top:4px">Bisa menambahkan beberapa kategori pekerjaan sekaligus untuk tanggal yang sama.</div>
+    </div>
+    <button id="taskCancelTop" class="actionBtn" type="button">×</button>
+  </div>
+
+  <div class="taskModalTop">
+    <div>
+      <label>Tanggal</label>
+      <input id="newDate" type="date">
+    </div>
+    <div>
+      <label>Penanda tanggal <span class="muted">(opsional)</span></label>
+      <input id="newLabel" placeholder="Contoh: 2">
+    </div>
+  </div>
+
+  <div class="taskCategoryHead">
+    <div>
+      <b>Kategori pekerjaan</b>
+      <span>Tambah lebih dari satu dalam satu tanggal.</span>
+    </div>
+    <button id="addTaskRow" type="button" class="secondary smallBtn">＋ Tambah kategori</button>
+  </div>
+
+  <div id="taskRows" class="taskRows"></div>
+  <div id="taskErr" class="err"></div>
+
+  <div class="row">
+    <button id="taskCancel" class="pill">Batal</button>
+    <button id="taskSave" class="primary">Tambah pekerjaan</button>
+  </div>
+</div></div>
 
 <div id="agendaModal" class="modal hide"><div class="box"><h2 style="margin:0 0 16px">Tambah agenda</h2>
 <label>Tanggal</label><input id="agendaDateInput" type="date">
@@ -377,20 +441,70 @@ document.querySelectorAll(".taskTab").forEach(btn=>{
 });
 
 function openProject(month){
- currentProject=month;$("folderHome").classList.add("hide");const root=$("projectView");root.classList.remove("hide");root.classList.add("compactProjectView");
- const items=(folderData()[month]||[]).slice().sort((a,b)=>(a.task_date||"").localeCompare(b.task_date||"") || String(a.batch_label||"").localeCompare(String(b.batch_label||"")));
+ currentProject=month;
+ $("folderHome").classList.add("hide");
+ const root=$("projectView");
+ root.classList.remove("hide");
+ root.classList.add("compactProjectView");
+
+ const items=(folderData()[month]||[]).slice().sort((a,b)=>
+   (a.task_date||"").localeCompare(b.task_date||"") ||
+   String(a.batch_label||"").localeCompare(String(b.batch_label||""))
+ );
  const done=items.filter(t=>t.completed).length;
- root.innerHTML=`<div class="folderViewHead"><div><div class="eyebrow">KERJAAN BULANAN</div><div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div><div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai</div></div><button class="backBtn" id="backProjects">← Kerjaan</button></div>`;
+
+ root.innerHTML=`<div class="folderViewHead">
+   <div>
+     <div class="eyebrow">KERJAAN BULANAN</div>
+     <div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div>
+     <div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai</div>
+   </div>
+   <div style="display:flex;align-items:center;gap:8px">
+     ${canAdmin()?'<button class="monthAddBtn" id="monthAddTask">＋ Tambah Kerjaan</button>':""}
+     <button class="backBtn" id="backProjects">← Kerjaan</button>
+   </div>
+ </div>`;
+
  $("backProjects").onclick=()=>closeProject();
- const days={};items.forEach(t=>{const k=t.task_date+"|"+(t.batch_label||"");(days[k]??=[]).push(t)});
+ if(canAdmin()) $("monthAddTask").onclick=()=>openTaskModal(
+   items[0]?.task_date || `${month}-01`
+ );
+
+ const days={};
+ items.forEach(t=>{
+   const k=t.task_date+"|"+(t.batch_label||"");
+   (days[k]??=[]).push(t)
+ });
+
  Object.keys(days).sort().forEach(k=>{
-   const di=days[k],sec=document.createElement("section");sec.className="day";
+   const di=days[k],sec=document.createElement("section");
+   sec.className="day";
    const d=di[0],dd=di.filter(x=>x.completed).length;
-   sec.innerHTML=`<div class="dateLine"><h3 class="date">${d.task_date.split("-").reverse().join(".")}${d.batch_label?"-"+esc(d.batch_label):""}</h3><div class="dateMeta">${dd}/${di.length} selesai</div></div><div class="taskCard"></div>`;
+
+   sec.innerHTML=`<div class="dateLine">
+     <h3 class="date">${d.task_date.split("-").reverse().join(".")}${d.batch_label?"-"+esc(d.batch_label):""}</h3>
+     <div class="compactDateActions">
+       <div class="dateMeta">${dd}/${di.length} selesai</div>
+       ${canAdmin()?'<button type="button" class="dayAddBtn">＋ Tambah</button>':""}
+     </div>
+   </div>
+   <div class="taskCard"></div>`;
+
    const card=sec.querySelector(".taskCard");
+   const addBtn=sec.querySelector(".dayAddBtn");
+   if(addBtn) addBtn.onclick=()=>openTaskModal(d.task_date,d.batch_label||"");
+
    di.forEach(t=>{
-     const row=document.createElement("div");row.className="task";
-     row.innerHTML=`<button class="check ${t.completed?"done":""}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}${t.project_name?" · "+esc(t.project_name):""}</div></div><div class="actions"><button class="actionBtn editBtn">✎</button><button class="actionBtn deleteBtn">×</button></div>`;
+     const row=document.createElement("div");
+     row.className="task";
+     row.innerHTML=`<button class="check ${t.completed?"done":""}"></button>
+       <div class="title ${t.completed?"doneText":""}">${esc(t.title)}
+         <div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}${t.project_name?" · "+esc(t.project_name):""}</div>
+       </div>
+       <div class="actions">
+         <button class="actionBtn editBtn">✎</button>
+         <button class="actionBtn deleteBtn">×</button>
+       </div>`;
      row.querySelector(".check").onclick=()=>toggle(t);
      row.querySelector(".editBtn").onclick=()=>openEdit(t);
      row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);
@@ -399,6 +513,7 @@ function openProject(month){
    root.appendChild(sec);
  });
 }
+
 function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("projectView").classList.remove("compactProjectView");$("folderHome").classList.remove("hide");renderFolders()}
 
 function renderTeam(){
@@ -521,18 +636,121 @@ async function toggle(t){
   if(currentProject) openProject(currentProject);
 }
 $("addTaskBtn").onclick=()=>{if(canAdmin())openTaskModal(new Date().toISOString().slice(0,10))};
-function openTaskModal(date){
-  $("newDate").value=date;
-  $("newLabel").value="";
-  $("newTitle").value="";
-  $("newProject").value=currentProject&&currentProject!=="Belum ditentukan"?currentProject:"";
-  fillPicSelect("newPic","");
+
+function picOptionsHtml(selected=""){
+  const names=[...new Set(profiles.map(p=>(p.username||"").trim()).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,"id"));
+  return '<option value="">— Belum ditentukan —</option>'+
+    names.map(n=>`<option value="${esc(n)}"${n===selected?" selected":""}>${esc(n)}</option>`).join("");
+}
+
+function addTaskInputRow(data={}){
+  const wrap=$("taskRows");
+  const row=document.createElement("div");
+  row.className="taskInputRow";
+  row.innerHTML=`
+    <div class="taskTitleField">
+      <label>Nama pekerjaan</label>
+      <input class="taskRowTitle" placeholder="Contoh: Konten Perform" value="${esc(data.title||"")}">
+    </div>
+    <div>
+      <label>Project</label>
+      <input class="taskRowProject" placeholder="Opsional" value="${esc(data.project||"")}">
+    </div>
+    <div>
+      <label>PIC</label>
+      <select class="taskRowPic">${picOptionsHtml(data.pic||"")}</select>
+    </div>
+    <button type="button" class="removeTaskRow" title="Hapus kategori">×</button>
+  `;
+  row.querySelector(".removeTaskRow").onclick=()=>row.remove();
+  wrap.appendChild(row);
+  row.querySelector(".taskRowTitle").focus();
+  updateTaskRowRemoveButtons();
+}
+
+function updateTaskRowRemoveButtons(){
+  const rows=[...document.querySelectorAll(".taskInputRow")];
+  rows.forEach(row=>{
+    const btn=row.querySelector(".removeTaskRow");
+    btn.disabled=rows.length===1;
+  });
+}
+
+function openTaskModal(date,batchLabel=""){
+  $("newDate").value=date||new Date().toISOString().slice(0,10);
+  $("newLabel").value=batchLabel||"";
+  $("taskRows").innerHTML="";
+  addTaskInputRow({
+    project:currentProject&&currentProject!=="Belum ditentukan"?currentProject:""
+  });
   $("taskErr").textContent="";
   $("taskModal").classList.remove("hide");
+  setTimeout(()=>$("taskRows")?.querySelector(".taskRowTitle")?.focus(),30);
 }
+
 function closeTaskModal(){$("taskModal").classList.add("hide")}
-$("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
-$("taskSave").onclick=async()=>{if(!canAdmin())return;const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
+$("taskCancel").onclick=closeTaskModal;
+$("taskCancelTop").onclick=closeTaskModal;
+$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
+$("addTaskRow").onclick=()=>addTaskInputRow({
+  project:currentProject&&currentProject!=="Belum ditentukan"?currentProject:""
+});
+
+$("taskSave").onclick=async()=>{
+  if(!canAdmin())return;
+
+  const date=$("newDate").value;
+  const label=$("newLabel").value.trim();
+  const rows=[...document.querySelectorAll(".taskInputRow")];
+
+  if(!date){
+    $("taskErr").textContent="Tanggal wajib diisi.";
+    return;
+  }
+
+  const entries=rows.map(row=>({
+    title:row.querySelector(".taskRowTitle").value.trim(),
+    project:row.querySelector(".taskRowProject").value.trim(),
+    pic:row.querySelector(".taskRowPic").value.trim()
+  })).filter(x=>x.title);
+
+  if(!entries.length){
+    $("taskErr").textContent="Minimal satu kategori pekerjaan harus diisi.";
+    return;
+  }
+
+  $("taskSave").disabled=true;
+  $("taskSave").textContent="Menyimpan...";
+
+  const payload=entries.map(x=>({
+    task_date:date,
+    batch_label:label||null,
+    title:x.title,
+    project_name:x.project||null,
+    pic:x.pic||null,
+    created_by:user.id
+  }));
+
+  const {error}=await sb.from("tasks").insert(payload);
+
+  $("taskSave").disabled=false;
+  $("taskSave").textContent="Tambah pekerjaan";
+
+  if(error){
+    $("taskErr").textContent=error.message;
+    return;
+  }
+
+  closeTaskModal();
+  await loadTasks();
+
+  // Tetap berada di folder bulan yang sedang dibuka.
+  if(currentProject){
+    const month=monthKey({task_date:date});
+    if(month===currentProject) openProject(currentProject);
+  }
+}
 
 function setPage(page){if(!canAdmin() && !["folders","calendar","team","settings"].includes(page)) page="folders";currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
