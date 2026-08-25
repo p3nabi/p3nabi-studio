@@ -35,7 +35,9 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 @media(max-width:1000px){.app{grid-template-columns:82px 1fr}.sidebar{padding:22px 12px}.brandName{font-size:16px}.brandSub,.navBtn span:last-child,.workspace,.sidebarQuote{display:none}.navBtn{justify-content:center}.main{padding:25px 22px}.stats,.recapGrid{grid-template-columns:1fr}.teamGrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.app{display:block}.sidebar{position:sticky;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px;flex-direction:row;align-items:center}.brand{padding:0 8px}.brandName{font-size:17px}.nav{margin-left:auto;flex-direction:row}.navBtn{padding:8px}.main{padding:18px 13px 35px}.topbar{align-items:center}.userInfo{display:none}.folderGrid{grid-template-columns:1fr 1fr}.legend{grid-template-columns:1fr 1fr}.legendTitle{grid-column:1/-1}.yearProjects{grid-template-columns:repeat(2,1fr)}.teamGrid,.settingsGrid{grid-template-columns:1fr}.tableRow{grid-template-columns:1.3fr .8fr .5fr}.tableRow .hideMob{display:none}.calDay{min-height:62px;padding:5px}.weekday{font-size:8px}.dots{margin-top:4px}}
 @media(max-width:450px){.folderGrid{grid-template-columns:1fr}.legend{grid-template-columns:1fr}.legendTitle{grid-column:auto}.calDay{min-height:54px}.dayNum{width:22px;height:22px}.calendar{border-radius:12px}}
-</style>
+
+.calendarWrap{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px}.calendarToolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}.calendarToolbar strong{font-size:15px;min-width:140px;text-align:center}.calendarWeek,.calendarGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.calendarWeek{margin-bottom:4px}.calendarWeek span{font-size:10px;color:#999;text-align:center;padding:4px}.calDay{min-height:58px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px;cursor:pointer;text-align:left}.calDay:hover{background:#faf9ff}.calDay.muted{opacity:.35}.calDay.selected{box-shadow:0 0 0 2px #7c5cff}.calNum{font-weight:800;font-size:11px}.calDot{width:4px;height:4px;border-radius:50%;background:#7c5cff;display:inline-block;margin:0 1px}.agendaPanel{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;max-height:180px;overflow:auto}.agendaItem{padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}.agendaTitle{font-weight:750}.agendaMeta{font-size:11px;color:#999;margin-top:3px}.editProfileBtn{margin-left:auto;border:0;background:#f1eff8;border-radius:9px;padding:7px 10px;cursor:pointer}.teamTop{align-items:center}.teamCard{position:relative}.profileEditBox{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.profileEditBox input{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:10px;margin:4px 0 8px}.profileEditBox button{border:0;border-radius:10px;padding:9px 12px;cursor:pointer}.profileEditBox .save{background:#17131f;color:#fff}.profileEditBox .cancel{background:#eee;margin-left:6px}
+@media(max-width:700px){.calendarWrap{padding:9px}.calDay{min-height:48px;padding:5px}.calendarToolbar strong{min-width:110px}.teamGrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:430px){.calDay{min-height:42px}.calNum{font-size:10px}}\n</style>
 </head>
 <body>
 <div id="login" class="modal">
@@ -372,11 +374,144 @@ function setPage(page){if(!canAdmin() && !["folders","settings"].includes(page))
  if(page==="folders"){$("pageTitle").textContent="Kerjaan";$("pageSub").textContent="Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan."}
  if(page==="calendar"){$("pageTitle").textContent="Calendar";$("pageSub").textContent="Agenda dan tanggal penting tim."}
  if(page==="team"){$("pageTitle").textContent="Team";$("pageSub").textContent="Anggota tim dan jobdesk."}
- if(page==="settings"){$("pageTitle").textContent="Settings";$("pageSub").textContent="Pengaturan akun pribadi."}
+ if(page==="calendar") loadCalendar();
+    if(page==="team") loadTeam();
+    if(page==="settings"){$("pageTitle").textContent="Settings";$("pageSub").textContent="Pengaturan akun pribadi."}
 }
 document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>{if(b.dataset.page==="folders")closeProject();setPage(b.dataset.page);window.scrollTo({top:0,behavior:"smooth"})});
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;["editModal","taskModal","agendaModal"].forEach(id=>$(id).classList.add("hide"))});
 start();
+
+  async function loadTeam(){
+    const {data,error}=await sb.from("profiles").select("id,username,jobdesk,avatar_url,role").order("username");
+    if(error){ console.error(error); return; }
+    const box=document.getElementById("teamList");
+    if(!box) return;
+    box.innerHTML="";
+    (data||[]).forEach(p=>{
+      const card=document.createElement("div");
+      card.className="teamCard";
+      const roleLabel=p.role==="admin"?"Super Admin":"Karyawan";
+      card.innerHTML=`
+        <div class="teamTop">
+          <img class="avatar" src="${escapeHtml(p.avatar_url||"")}" onerror="this.style.visibility='hidden'">
+          <div><div class="teamName">${escapeHtml(p.username||"User")}</div><div class="teamRole">${escapeHtml(p.jobdesk||"Belum diisi")}</div></div>
+        </div>
+        <div class="roleBadge">${roleLabel}</div>
+        ${window.isAdmin ? `<div class="adminControls"><label style="font-size:11px;color:#888">Role</label><select class="roleSelect"><option value="employee" ${p.role!=="admin"?"selected":""}>Karyawan</option><option value="admin" ${p.role==="admin"?"selected":""}>Super Admin</option></select></div>` : ""}`;
+      if(window.isAdmin){
+        const select=card.querySelector(".roleSelect");
+        select.onchange=async()=>{
+          if(p.id===user.id && select.value!=="admin"){
+            alert("Kamu tidak bisa menghapus role Super Admin dari akun sendiri.");
+            select.value="admin";
+            return;
+          }
+          const admins=(data||[]).filter(x=>x.role==="admin");
+          if(p.role==="admin" && select.value!=="admin" && admins.length<=1){
+            alert("Minimal harus ada 1 Super Admin.");
+            select.value="admin";
+            return;
+          }
+          const {error}=await sb.from("profiles").update({role:select.value}).eq("id",p.id);
+          if(error){ alert(error.message); select.value=p.role==="admin"?"admin":"employee"; return; }
+          loadTeam();
+        };
+      }
+      box.appendChild(card);
+    });
+    if(!(data||[]).length) box.innerHTML='<div class="teamEmpty">Belum ada anggota team.</div>';
+  }
+
+  const oldLoadTeamHook = window.loadTeam;
+  
+  let calendarCursor = new Date();
+  let selectedCalendarDate = new Date().toISOString().slice(0,10);
+
+  async function loadCalendar(){
+    renderCalendar();
+    const {data,error}=await sb.from("agendas").select("*").order("agenda_date").order("agenda_time");
+    window.calendarAgendas = error ? [] : (data||[]);
+    renderCalendar();
+  }
+
+  async function addAgendaForDate(date){
+    const title=prompt("Judul agenda:");
+    if(!title || !title.trim()) return;
+    const time=prompt("Waktu (opsional, contoh 14:00):","") || null;
+    const notes=prompt("Catatan (opsional):","") || null;
+    const {error}=await sb.from("agendas").insert({agenda_date:date,title:title.trim(),agenda_time:time,notes});
+    if(error){alert(error.message);return;}
+    await loadCalendar();
+    selectedCalendarDate=date;
+    renderCalendar();
+  }
+
+  function renderCalendar(){
+    const grid=document.getElementById("calendarGrid"), title=document.getElementById("calendarTitle");
+    if(!grid||!title) return;
+    const y=calendarCursor.getFullYear(), m=calendarCursor.getMonth();
+    title.textContent=new Date(y,m,1).toLocaleDateString("id-ID",{month:"long",year:"numeric"});
+    grid.innerHTML="";
+    const first=new Date(y,m,1), start=(first.getDay()+6)%7;
+    const days=new Date(y,m+1,0).getDate();
+    for(let i=0;i<start;i++){ const d=document.createElement("div"); d.className="calDay muted"; grid.appendChild(d); }
+    for(let day=1;day<=days;day++){
+      const date=`${y}-${String(m+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+      const el=document.createElement("button"); el.type="button"; el.className="calDay"+(date===selectedCalendarDate?" selected":"");
+      const count=(window.calendarAgendas||[]).filter(a=>a.agenda_date===date).length;
+      el.innerHTML=`<div class="calNum">${day}</div>${count?'<div style="margin-top:8px">'+Array(Math.min(count,4)).fill('<span class="calDot"></span>').join("")+'</div>':""}`;
+      el.onclick=()=>{selectedCalendarDate=date; renderCalendar(); renderAgenda(date)};
+      grid.appendChild(el);
+    }
+    renderAgenda(selectedCalendarDate);
+  }
+
+  function renderAgenda(date){
+    const box=document.getElementById("agendaPanel"); if(!box)return;
+    const items=(window.calendarAgendas||[]).filter(a=>a.agenda_date===date);
+    const d=new Date(date+"T00:00:00");
+    const label=d.toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    box.innerHTML=`<div style="font-weight:800;margin-bottom:10px">${label}</div>`;
+    if(!items.length){box.innerHTML+=`<div class="empty">Tidak ada agenda.</div>`;}
+    if(window.isAdmin){
+      box.innerHTML+=`<button type="button" id="addAgendaBtn" class="primary" style="margin-bottom:10px">＋ Tambah agenda</button>`;
+      document.getElementById("addAgendaBtn").onclick=()=>addAgendaForDate(date);
+    }
+    items.forEach(a=>{
+      const el=document.createElement("div"); el.className="agendaItem";
+      el.innerHTML=`<div class="agendaTitle">${escapeHtml(a.title||"Agenda")}</div><div class="agendaMeta">${escapeHtml(a.agenda_time||"")} ${a.notes?"· "+escapeHtml(a.notes):""}</div>`;
+      box.appendChild(el);
+    });
+  }
+
+  document.getElementById("prevMonth")?.addEventListener("click",()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar()});
+  document.getElementById("nextMonth")?.addEventListener("click",()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar()});
+  document.getElementById("todayBtn")?.addEventListener("click",()=>{calendarCursor=new Date();selectedCalendarDate=new Date().toISOString().slice(0,10);renderCalendar()});
+
+  // Admin-only profile editing inside Team.
+  const originalLoadTeam = window.loadTeam;
+  window.loadTeam = async function(){
+    await originalLoadTeam();
+    const box=document.getElementById("teamList"); if(!box) return;
+    if(!window.isAdmin) return;
+    const cards=[...box.querySelectorAll(".teamCard")];
+    const {data}=await sb.from("profiles").select("id,username,jobdesk,avatar_url,role").order("username");
+    cards.forEach((card,i)=>{
+      const p=data?.[i]; if(!p) return;
+      const edit=document.createElement("div"); edit.className="profileEditBox";
+      edit.innerHTML=`<label style="font-size:11px;color:#888">Username</label><input class="editUsername" value="${escapeHtml(p.username||"")}"><label style="font-size:11px;color:#888">Jobdesk</label><input class="editJobdesk" value="${escapeHtml(p.jobdesk||"")}"><button class="save">Simpan</button><button class="cancel">Batal</button>`;
+      card.appendChild(edit);
+      edit.querySelector(".save").onclick=async()=>{
+        const username=edit.querySelector(".editUsername").value.trim();
+        const jobdesk=edit.querySelector(".editJobdesk").value.trim();
+        if(!username){alert("Username wajib diisi.");return;}
+        const {error}=await sb.from("profiles").update({username,jobdesk}).eq("id",p.id);
+        if(error) alert(error.message); else loadTeam();
+      };
+      edit.querySelector(".cancel").onclick=()=>loadTeam();
+    });
+  };
 </script>
 </body>
 </html>
