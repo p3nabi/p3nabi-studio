@@ -67,6 +67,140 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
   width:100% !important;
   box-sizing:border-box !important;
 }
+
+/* PRIORITAS 1 — KERJAAN: compact mini-card */
+#projectView.compactProjectView .projectTools{
+  grid-column:1 / -1;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 2px;
+}
+#projectView.compactProjectView .projectToolsSearch{
+  flex:1;
+  min-width:0;
+  height:36px;
+  padding:8px 11px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#111118;
+  color:#fff;
+  font-size:11px;
+}
+#projectView.compactProjectView .projectToolsSearch::placeholder{color:#77737f}
+#projectView.compactProjectView .projectToolsFilter{
+  width:145px;
+  height:36px;
+  padding:7px 10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#111118;
+  color:#eee;
+  font-size:11px;
+}
+#projectView.compactProjectView .miniCard{
+  position:relative;
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:linear-gradient(145deg,#171720,#111118);
+}
+#projectView.compactProjectView .miniCardHead{
+  padding:11px 12px 9px;
+  border-bottom:1px solid #292735;
+  background:#14131b;
+}
+#projectView.compactProjectView .miniCardTitle{
+  margin:0;
+  padding-right:18px;
+  font-size:13px;
+  line-height:1.15;
+  font-weight:850;
+  letter-spacing:-.2px;
+  color:#f7f5fb;
+  word-break:break-word;
+}
+#projectView.compactProjectView .miniCardMeta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:5px;
+  color:#85818d;
+  font-size:9px;
+}
+#projectView.compactProjectView .miniProgress{
+  height:4px;
+  margin-top:8px;
+  border-radius:99px;
+  overflow:hidden;
+  background:#2a2933;
+}
+#projectView.compactProjectView .miniProgressFill{
+  height:100%;
+  border-radius:99px;
+  background:linear-gradient(90deg,#8f47ff,#b36bff);
+}
+#projectView.compactProjectView .miniCard .taskCard{
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+}
+#projectView.compactProjectView .miniCard .task{
+  min-height:42px !important;
+  padding:7px 9px !important;
+  gap:7px !important;
+}
+#projectView.compactProjectView .miniCard .check{
+  width:18px !important;
+  height:18px !important;
+  flex:0 0 18px !important;
+}
+#projectView.compactProjectView .miniCard .check.done:after{font-size:11px !important}
+#projectView.compactProjectView .miniCard .title{
+  min-width:0 !important;
+  font-size:10px !important;
+  line-height:1.15 !important;
+}
+#projectView.compactProjectView .miniCard .taskSub{
+  margin-top:2px !important;
+  font-size:8px !important;
+  line-height:1.1 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+#projectView.compactProjectView .miniCard .actions{
+  margin-left:auto !important;
+  gap:0 !important;
+  flex:0 0 auto !important;
+}
+#projectView.compactProjectView .miniCard .actionBtn{
+  padding:3px 4px !important;
+  font-size:10px !important;
+}
+#projectView.compactProjectView .miniCardEmpty{
+  grid-column:1 / -1;
+  padding:30px;
+  text-align:center;
+  color:#77737f;
+  border:1px dashed #35313f;
+  border-radius:14px;
+}
+@media(max-width:1200px){
+  #projectView.compactProjectView{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:16px !important}
+}
+@media(max-width:900px){
+  #projectView.compactProjectView{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px !important}
+  #projectView.compactProjectView .projectTools{flex-wrap:wrap}
+  #projectView.compactProjectView .projectToolsSearch{flex-basis:100%}
+  #projectView.compactProjectView .projectToolsFilter{width:100%}
+}
+@media(max-width:600px){
+  #projectView.compactProjectView{grid-template-columns:1fr !important;gap:12px !important}
+}
+
 #projectView.compactProjectView > .folderViewHead{
   grid-column:1 / -1 !important;
   width:100% !important;
@@ -106,56 +240,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 @media(max-width:1200px){#projectView.compactProjectView{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:16px !important}}
 @media(max-width:900px){#projectView.compactProjectView{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px !important}}
 @media(max-width:600px){#projectView.compactProjectView{grid-template-columns:1fr !important;gap:12px !important}}
-
-
-/* MULTI-CATEGORY ADD TASK MODAL */
-.taskModalBox{width:min(720px,100%) !important;max-height:88vh;overflow:auto}
-.taskModalHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
-.taskModalHead .actionBtn{font-size:20px;padding:2px 7px}
-.taskModalTop{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.taskModalTop label{display:block;margin-bottom:5px}
-.taskCategoryHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;margin-bottom:9px}
-.taskCategoryHead b{display:block;font-size:12px}
-.taskCategoryHead span{display:block;color:#77737f;font-size:10px;margin-top:3px}
-.smallBtn{padding:8px 10px !important;font-size:11px !important;white-space:nowrap}
-.taskRows{display:flex;flex-direction:column;gap:8px}
-.taskInputRow{display:grid;grid-template-columns:1.35fr 1fr 1fr 34px;gap:7px;align-items:end;padding:10px;background:#111118;border:1px solid #292735;border-radius:12px}
-.taskInputRow label{display:block;margin-bottom:5px;font-size:10px}
-.taskInputRow input,.taskInputRow select{padding:9px 10px;font-size:11px}
-.removeTaskRow{height:38px;border:1px solid #3a2a30;background:#1a1216;color:#ff8188;border-radius:9px;font-size:16px}
-.removeTaskRow:disabled{opacity:.25;cursor:not-allowed}
-.monthAddWrap{margin-left:auto}
-.monthAddBtn{border:1px solid #6e3bb1;background:linear-gradient(90deg,#6e35a8,#9d55ff);color:#fff;border-radius:9px;padding:8px 11px;font-size:11px;font-weight:800}
-.dayAddBtn{border:0;background:transparent;color:#b36bff;font-size:10px;font-weight:800;padding:3px 0;margin-left:8px}
-.dayAddBtn:hover{text-decoration:underline}
-.compactDateActions{display:flex;align-items:center;gap:4px}
-@media(max-width:700px){
-  .taskModalTop{grid-template-columns:1fr}
-  .taskInputRow{grid-template-columns:1fr 1fr}
-  .taskInputRow .taskTitleField{grid-column:1/-1}
-  .removeTaskRow{grid-column:2;justify-self:end;width:34px}
-}
-@media(max-width:450px){
-  .taskCategoryHead{align-items:flex-start;flex-direction:column}
-  .taskInputRow{grid-template-columns:1fr}
-  .taskInputRow .taskTitleField{grid-column:auto}
-  .removeTaskRow{grid-column:auto;width:100%}
-}
-
-/* JOB NAME MINI CARD MENU */
-#projectView.compactProjectView .day{position:relative}
-#projectView.compactProjectView .dateLine{position:relative;padding-right:42px !important}
-.jobTitle{font-size:13px;font-weight:850;line-height:1.2}
-.jobDate{font-size:9px;color:#85818d;margin-top:3px}
-.jobMenuBtn{position:absolute;right:8px;top:7px;border:0;background:transparent;color:#8b8793;font-size:18px;line-height:1;padding:4px 7px;border-radius:7px;z-index:3}
-.jobMenuBtn:hover{background:#25232d;color:#fff}
-.jobMenu{position:absolute;right:8px;top:38px;z-index:20;min-width:155px;padding:5px;background:#1a1922;border:1px solid #383342;border-radius:10px;box-shadow:0 18px 45px rgba(0,0,0,.5)}
-.jobMenu button{display:block;width:100%;border:0;background:transparent;color:#ddd;text-align:left;padding:9px 10px;border-radius:7px;font-size:11px}
-.jobMenu button:hover{background:#282631;color:#fff}
-.jobMenu button.danger{color:#ff7d84}
-.jobMenu button.danger:hover{background:#2b171b}
-.jobNameHint{font-size:10px;color:#77737f;margin-top:4px}
-.folderStats strong{display:block;margin-top:3px}.folderCard.status-red .folderIcon{filter:none}
 </style>
 </head>
 <body>
@@ -207,7 +291,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 
     <section id="page-folders" class="page">
       <div id="folderHome">
-        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Folder bulan untuk mengelola kerjaan dan output tim.</p></div><button class="primary adminOnly" id="addFolderBtn">＋ Tambah Folder</button></div>
+        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary adminOnly" id="addTaskBtn">＋ Tambah Folder</button></div>
       <div class="legend">
         <div class="legendTitle">Keterangan warna folder</div>
         <div class="legendItem"><span class="legendFolder red"></span><div><b>Merah</b> Belum selesai</div></div>
@@ -270,60 +354,13 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 <label>PIC</label><select id="editPic" class="picSelect"></select>
 <div id="editErr" class="err"></div><div class="row"><button id="editCancel" class="pill">Batal</button><button id="editSave" class="primary">Simpan</button></div></div></div>
 
-<div id="folderModal" class="modal hide"><div class="box">
-<h2 style="margin:0 0 8px">Tambah Folder</h2>
-<div class="muted" style="font-size:11px;margin-bottom:16px">Membuat folder bulan untuk manajemen. Folder ini tidak mengubah database pekerjaan.</div>
-<label>Bulan</label><input id="folderMonth" type="month">
-<div id="folderErr" class="err"></div>
-<div class="row"><button id="folderCancel" class="pill">Batal</button><button id="folderSave" class="primary">Buat Folder</button></div>
-</div></div>
-
-<div id="taskModal" class="modal hide"><div class="box taskModalBox">
-  <div class="taskModalHead">
-    <div>
-      <h2 style="margin:0">Tambah pekerjaan</h2>
-      <div class="muted" style="font-size:11px;margin-top:4px">Satu kerjaan dapat memiliki beberapa output. Semua output akan masuk ke mini card kerjaan ini.</div>
-    </div>
-    <button id="taskCancelTop" class="actionBtn" type="button">×</button>
-  </div>
-
-  <div class="taskModalTop">
-    <div>
-      <label>Tanggal</label>
-      <input id="newDate" type="date">
-    </div>
-    <div>
-      <label>Nama kerjaan</label>
-      <input id="newLabel" placeholder="Contoh: MV Ecko Show">
-      <div class="jobNameHint">Judul ini akan tampil di bagian atas mini card.</div>
-    </div>
-  </div>
-
-  <div class="taskCategoryHead">
-    <div>
-      <b>Output</b>
-      <span>Tambahkan output yang harus dikerjakan dalam kerjaan ini.</span>
-    </div>
-    <button id="addTaskRow" type="button" class="secondary smallBtn">＋ Tambah output</button>
-  </div>
-
-  <div id="taskRows" class="taskRows"></div>
-  <div id="taskErr" class="err"></div>
-
-  <div class="row">
-    <button id="taskCancel" class="pill">Batal</button>
-    <button id="taskSave" class="primary">Buat Kerjaan</button>
-  </div>
-</div></div>
-
-<div id="jobDateModal" class="modal hide"><div class="box">
-<h2 style="margin:0 0 8px">Edit Kerjaan</h2>
-<div class="muted" style="font-size:11px;margin-bottom:14px">Ubah nama kerjaan atau tanggal. Semua output di mini card ikut diperbarui.</div>
-<label>Nama kerjaan</label><input id="jobNameInput" type="text">
-<label style="margin-top:10px">Tanggal</label><input id="jobDateInput" type="date">
-<div id="jobDateErr" class="err"></div>
-<div class="row"><button id="jobDateCancel" class="pill">Batal</button><button id="jobDateSave" class="primary">Simpan</button></div>
-</div></div>
+<div id="taskModal" class="modal hide"><div class="box"><h2 style="margin:0 0 16px">Tambah pekerjaan</h2>
+<label>Tanggal</label><input id="newDate" type="date">
+<label>Penanda tanggal (opsional)</label><input id="newLabel" placeholder="Contoh: 2">
+<label>Nama pekerjaan</label><input id="newTitle" placeholder="Contoh: Upload TikTok">
+<label>Nama project</label><input id="newProject" placeholder="Contoh: MV Ecko Show">
+<label>PIC</label><select id="newPic" class="picSelect"></select>
+<div id="taskErr" class="err"></div><div class="row"><button id="taskCancel" class="pill">Batal</button><button id="taskSave" class="primary">Tambah</button></div></div></div>
 
 <div id="agendaModal" class="modal hide"><div class="box"><h2 style="margin:0 0 16px">Tambah agenda</h2>
 <label>Tanggal</label><input id="agendaDateInput" type="date">
@@ -346,7 +383,7 @@ const initials=s=>(s||"P3").split(/[\s@]+/).filter(Boolean).slice(0,2).map(x=>x[
 const yearOf=t=>String(t.task_date).slice(0,4);
 const projectName=t=>(t.project_name||"").trim()||"Belum ditentukan";
 const monthKey=t=>String(t.task_date).slice(0,7);
-const statusFor=items=>{if(!items.length)return "red";const d=items.filter(t=>t.completed).length;return d===0?"red":d===items.length?"green":"orange"};
+const statusFor=items=>{const d=items.filter(t=>t.completed).length;return d===0?"red":d===items.length?"green":"orange"};
 const monthLabel=k=>new Date(k+"-01T00:00:00").toLocaleDateString("id-ID",{month:"long",year:"numeric"});
 function avatarHtml(p,size=""){return p?.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:esc(initials(p?.username||p?.email||"P3"))}
 function getProfile(id=user?.id){return profiles.find(p=>p.id===id)}
@@ -444,21 +481,15 @@ function updateTaskFilterUI(){
     btn.classList.toggle("active",btn.dataset.taskFilter===taskFilter);
   });
 }
-function getManagedFolders(){
- try{return JSON.parse(localStorage.getItem("p3nabi_managed_folders")||"[]").filter(x=>/^\d{4}-\d{2}$/.test(x));}
- catch{return []}
-}
-function saveManagedFolders(list){localStorage.setItem("p3nabi_managed_folders",JSON.stringify([...new Set(list)].sort()));}
 function folderData(){
  const m={};
  visibleTasks().forEach(t=>{const k=monthKey(t);(m[k]??=[]).push(t)});
- getManagedFolders().forEach(k=>{if(!m[k])m[k]=[]});
  return m;
 }
 function folderCard(month,items){
  const status=statusFor(items),done=items.filter(t=>t.completed).length;
  const el=document.createElement("button");el.className=`folderCard status-${status}`;el.type="button";
- el.innerHTML=`<span class="folderDots">⋮</span><div class="folderIcon ${status}"></div><div class="folderName">${esc(monthLabel(month))}</div><div class="folderStats">${items.length} pekerjaan<strong>${items.length?done+"/"+items.length+" selesai":"Folder kosong"}</strong></div>`;
+ el.innerHTML=`<span class="folderDots">⋮</span><div class="folderIcon ${status}"></div><div class="folderName">${esc(monthLabel(month))}</div><div class="folderStats">${items.length} pekerjaan<strong>${done}/${items.length} selesai</strong></div>`;
  el.onclick=()=>openProject(month);return el;
 }
 function renderFolders(){
@@ -479,86 +510,163 @@ document.querySelectorAll(".taskTab").forEach(btn=>{
   };
 });
 
-function jobNameOf(t){
-  return (t.batch_label||t.project_name||"Kerjaan").trim() || "Kerjaan";
-}
-function formatDate(d){return d?d.split("-").reverse().join("."):""}
-function groupJobItems(items){
-  const groups={};
-  items.forEach(t=>{
-    const name=jobNameOf(t);
-    const key=t.task_date+"|"+name;
-    (groups[key]??=[]).push(t);
-  });
-  return groups;
-}
-async function duplicateJob(items){
-  if(!canAdmin()||!items?.length)return;
-  const date=prompt("Tanggal baru (YYYY-MM-DD)",items[0].task_date);
-  if(!date)return;
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert("Format tanggal harus YYYY-MM-DD.");return;}
-  const payload=items.map(t=>({task_date:date,batch_label:t.batch_label||null,title:t.title,project_name:t.project_name||null,pic:t.pic||null,created_by:user.id,completed:false,completed_by:null,completed_at:null}));
-  const {error}=await sb.from("tasks").insert(payload);
-  if(error)alert(error.message);else{await loadTasks();if(currentProject===monthKey({task_date:date}))openProject(currentProject);else if(currentProject)openProject(currentProject);}
-}
-let editingJobGroup=null;
-function openJobDateEdit(items){
-  if(!canAdmin()||!items?.length)return;
-  editingJobGroup=items;
-  $("jobNameInput").value=jobNameOf(items[0]);
-  $("jobDateInput").value=items[0].task_date;
-  $("jobDateErr").textContent="";
-  $("jobDateModal").classList.remove("hide");
-}
-function closeJobDateEdit(){editingJobGroup=null;$("jobDateModal").classList.add("hide");}
-$("jobDateCancel").onclick=closeJobDateEdit;
-$("jobDateModal").onclick=e=>{if(e.target.id==="jobDateModal")closeJobDateEdit()};
-$("jobDateSave").onclick=async()=>{
-  if(!canAdmin()||!editingJobGroup)return;
-  const date=$("jobDateInput").value;
-  const name=$("jobNameInput").value.trim();
-  if(!date){$("jobDateErr").textContent="Tanggal wajib diisi.";return;}
-  if(!name){$("jobDateErr").textContent="Nama kerjaan wajib diisi.";return;}
-  const ids=editingJobGroup.map(t=>t.id);
-  const {error}=await sb.from("tasks").update({task_date:date,batch_label:name}).in("id",ids);
-  if(error){$("jobDateErr").textContent=error.message;return;}
-  closeJobDateEdit();await loadTasks();
-  if(currentProject)openProject(currentProject);
-};
-async function deleteJobGroup(items){
-  if(!canAdmin()||!items?.length)return;
-  const name=jobNameOf(items[0]);
-  if(!confirm(`Hapus kerjaan "${name}" beserta ${items.length} kategori?`))return;
-  const {error}=await sb.from("tasks").delete().in("id",items.map(t=>t.id));
-  if(error)alert(error.message);else await loadTasks();
-}
 function openProject(month){
- currentProject=month;
- $("folderHome").classList.add("hide");
- const root=$("projectView");root.classList.remove("hide");root.classList.add("compactProjectView");
- const items=(folderData()[month]||[]).slice().sort((a,b)=>(a.task_date||"").localeCompare(b.task_date||"")||String(a.created_at||"").localeCompare(String(b.created_at||"")));
- const done=items.filter(t=>t.completed).length;
- root.innerHTML=`<div class="folderViewHead"><div><div class="eyebrow">KERJAAN BULANAN</div><div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div><div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai</div></div><div style="display:flex;align-items:center;gap:8px">${canAdmin()?'<button class="monthAddBtn" id="monthAddTask">＋ Tambah Kerjaan</button>':""}<button class="backBtn" id="backProjects">← Kerjaan</button></div></div>`;
- $("backProjects").onclick=()=>closeProject();
- if(canAdmin())$("monthAddTask").onclick=()=>openTaskModal(`${month}-01`,"");
- const groups=groupJobItems(items);
- Object.keys(groups).sort((a,b)=>a.localeCompare(b)).forEach(key=>{
-   const di=groups[key],sec=document.createElement("section");sec.className="day";
-   const d=di[0],dd=di.filter(x=>x.completed).length,name=jobNameOf(d);
-   sec.innerHTML=`<div class="dateLine"><div><div class="jobTitle">${esc(name)}</div><div class="jobDate">${formatDate(d.task_date)} · ${dd}/${di.length} selesai</div></div>${canAdmin()?'<button type="button" class="jobMenuBtn" aria-label="Menu kerjaan">⋮</button>':""}<div class="taskCard"></div></div>`;
-   const card=sec.querySelector(".taskCard");
-   if(canAdmin()){
-     const menuBtn=sec.querySelector(".jobMenuBtn");
-     menuBtn.onclick=e=>{e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const m=document.createElement("div");m.className="jobMenu";m.innerHTML='<button data-act="dup">Duplicate</button><button data-act="date">Edit nama & tanggal</button><button data-act="del" class="danger">Hapus</button>';sec.appendChild(m);m.querySelector('[data-act="dup"]').onclick=()=>{m.remove();duplicateJob(di)};m.querySelector('[data-act="date"]').onclick=()=>{m.remove();openJobDateEdit(di)};m.querySelector('[data-act="del"]').onclick=()=>{m.remove();deleteJobGroup(di)};};
-   }
-   di.forEach(t=>{
-     const row=document.createElement("div");row.className="task";row.innerHTML=`<button class="check ${t.completed?"done":""}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}${t.project_name?" · "+esc(t.project_name):""}</div></div><div class="actions">${canAdmin()?'<button class="actionBtn editBtn">✎</button><button class="actionBtn deleteBtn">×</button>':""}</div>`;
-     row.querySelector(".check").onclick=()=>toggle(t);
-     if(canAdmin()){row.querySelector(".editBtn").onclick=()=>openEdit(t);row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);}
-     card.appendChild(row);
-   });
-   root.appendChild(sec);
- });
+  currentProject=month;
+  $("folderHome").classList.add("hide");
+  const root=$("projectView");
+  root.classList.remove("hide");
+  root.classList.add("compactProjectView");
+
+  const items=(folderData()[month]||[]).slice().sort(
+    (a,b)=>(a.task_date||"").localeCompare(b.task_date||"") ||
+    String(a.batch_label||"").localeCompare(String(b.batch_label||"")) ||
+    String(a.created_at||"").localeCompare(String(b.created_at||""))
+  );
+
+  const done=items.filter(t=>t.completed).length;
+
+  root.innerHTML=`
+    <div class="folderViewHead">
+      <div>
+        <div class="eyebrow">KERJAAN BULANAN</div>
+        <div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div>
+        <div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai · Cari & filter di bawah</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        ${canAdmin()?'<button class="primary" id="monthAddTask">＋ Tambah Kerjaan</button>':""}
+        <button class="backBtn" id="backProjects">← Kerjaan</button>
+      </div>
+    </div>
+
+    <div class="projectTools">
+      <input id="projectSearch" class="projectToolsSearch" type="search"
+        placeholder="⌕  Cari kerjaan, output, atau PIC...">
+      <select id="projectFilter" class="projectToolsFilter">
+        <option value="all">Semua</option>
+        <option value="pending">Belum selesai</option>
+        <option value="partial">Sedang dikerjakan</option>
+        <option value="done">Selesai</option>
+        <option value="mine">PIC Saya</option>
+      </select>
+    </div>
+  `;
+
+  $("backProjects").onclick=()=>closeProject();
+  if(canAdmin()) $("monthAddTask").onclick=()=>openTaskModal(new Date().toISOString().slice(0,10));
+
+  const days={};
+  items.forEach(t=>{
+    const k=t.task_date+"|"+(t.batch_label||"");
+    (days[k]??=[]).push(t);
+  });
+
+  const dayEntries=Object.entries(days).sort((a,b)=>a[0].localeCompare(b[0]));
+
+  function cardMatches(di, search, filter){
+    const q=(search||"").trim().toLowerCase();
+    const title=projectName(di[0]).toLowerCase();
+    const outputs=di.map(t=>`${t.title||""} ${t.pic||""}`).join(" ").toLowerCase();
+    const text=`${title} ${outputs}`;
+
+    if(q && !text.includes(q)) return false;
+
+    const total=di.length;
+    const completed=di.filter(t=>t.completed).length;
+
+    if(filter==="pending" && completed!==0) return false;
+    if(filter==="partial" && (completed===0 || completed===total)) return false;
+    if(filter==="done" && completed!==total) return false;
+
+    if(filter==="mine"){
+      const me=(getProfile()?.username||"").trim();
+      if(!me || !di.some(t=>(t.pic||"").trim()===me)) return false;
+    }
+
+    return true;
+  }
+
+  function renderMiniCards(){
+    root.querySelectorAll(".miniCard,.miniCardEmpty").forEach(el=>el.remove());
+
+    const search=$("projectSearch")?.value||"";
+    const filter=$("projectFilter")?.value||"all";
+    let shown=0;
+
+    dayEntries.forEach(([k,di])=>{
+      if(!cardMatches(di,search,filter)) return;
+
+      shown++;
+      const d=di[0];
+      const dd=di.filter(x=>x.completed).length;
+      const pct=di.length?Math.round(dd/di.length*100):0;
+
+      const projectNames=[...new Set(
+        di.map(x=>projectName(x)).filter(Boolean)
+      )];
+      const cardTitle=projectNames.length===1
+        ? projectNames[0]
+        : projectNames.slice(0,2).join(" · ");
+
+      const sec=document.createElement("section");
+      sec.className="miniCard";
+
+      sec.innerHTML=`
+        <div class="miniCardHead">
+          <h3 class="miniCardTitle">${esc(cardTitle)}</h3>
+          <div class="miniCardMeta">
+            <span>${d.task_date.split("-").reverse().join(".")}${d.batch_label?"-"+esc(d.batch_label):""}</span>
+            <span>${dd}/${di.length} selesai</span>
+          </div>
+          <div class="miniProgress">
+            <div class="miniProgressFill" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <div class="taskCard"></div>
+      `;
+
+      const card=sec.querySelector(".taskCard");
+
+      di.forEach(t=>{
+        const row=document.createElement("div");
+        row.className="task";
+
+        row.innerHTML=`
+          <button class="check ${t.completed?"done":""}" aria-label="${t.completed?"Batalkan":"Selesaikan"}"></button>
+          <div class="title ${t.completed?"doneText":""}">
+            ${esc(t.title)}
+            <div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}</div>
+          </div>
+          ${canAdmin()?`
+            <div class="actions">
+              <button class="actionBtn editBtn" title="Edit">✎</button>
+              <button class="actionBtn deleteBtn" title="Hapus">×</button>
+            </div>`:""}
+        `;
+
+        row.querySelector(".check").onclick=()=>toggle(t);
+
+        if(canAdmin()){
+          row.querySelector(".editBtn").onclick=()=>openEdit(t);
+          row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);
+        }
+
+        card.appendChild(row);
+      });
+
+      root.appendChild(sec);
+    });
+
+    if(!shown){
+      const empty=document.createElement("div");
+      empty.className="miniCardEmpty";
+      empty.textContent="Tidak ada kerjaan yang cocok dengan pencarian / filter.";
+      root.appendChild(empty);
+    }
+  }
+
+  $("projectSearch").oninput=renderMiniCards;
+  $("projectFilter").onchange=renderMiniCards;
+  renderMiniCards();
 }
 
 function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("projectView").classList.remove("compactProjectView");$("folderHome").classList.remove("hide");renderFolders()}
@@ -682,121 +790,19 @@ async function toggle(t){
   renderAll();
   if(currentProject) openProject(currentProject);
 }
-$("addFolderBtn").onclick=()=>{if(!canAdmin())return;$("folderMonth").value=new Date().toISOString().slice(0,7);$("folderErr").textContent="";$("folderModal").classList.remove("hide")};
-$("folderCancel").onclick=()=>$("folderModal").classList.add("hide");
-$("folderModal").onclick=e=>{if(e.target.id==="folderModal")$("folderModal").classList.add("hide")};
-$("folderSave").onclick=()=>{if(!canAdmin())return;const month=$("folderMonth").value;if(!month){$("folderErr").textContent="Pilih bulan terlebih dahulu.";return}const folders=getManagedFolders();if(folders.includes(month)){ $("folderErr").textContent="Folder bulan tersebut sudah ada.";return }saveManagedFolders([...folders,month]);$("folderModal").classList.add("hide");renderFolders()};
-
-function picOptionsHtml(selected=""){
-  const names=[...new Set(profiles.map(p=>(p.username||"").trim()).filter(Boolean))]
-    .sort((a,b)=>a.localeCompare(b,"id"));
-  return '<option value="">— Belum ditentukan —</option>'+
-    names.map(n=>`<option value="${esc(n)}"${n===selected?" selected":""}>${esc(n)}</option>`).join("");
-}
-
-function addTaskInputRow(data={}){
-  const wrap=$("taskRows");
-  const row=document.createElement("div");
-  row.className="taskInputRow";
-  row.innerHTML=`
-    <div class="taskTitleField">
-      <label>Nama pekerjaan</label>
-      <input class="taskRowTitle" placeholder="Contoh: Konten Perform" value="${esc(data.title||"")}">
-    </div>
-    <div>
-      <label>Project</label>
-      <input class="taskRowProject" placeholder="Opsional" value="${esc(data.project||"")}">
-    </div>
-    <div>
-      <label>PIC</label>
-      <select class="taskRowPic">${picOptionsHtml(data.pic||"")}</select>
-    </div>
-    <button type="button" class="removeTaskRow" title="Hapus kategori">×</button>
-  `;
-  row.querySelector(".removeTaskRow").onclick=()=>row.remove();
-  wrap.appendChild(row);
-  row.querySelector(".taskRowTitle").focus();
-  updateTaskRowRemoveButtons();
-}
-
-function updateTaskRowRemoveButtons(){
-  const rows=[...document.querySelectorAll(".taskInputRow")];
-  rows.forEach(row=>{
-    const btn=row.querySelector(".removeTaskRow");
-    btn.disabled=rows.length===1;
-  });
-}
-
-function openTaskModal(date,batchLabel=""){
-  $("newDate").value=date||new Date().toISOString().slice(0,10);
-  $("newLabel").value=batchLabel||"";
-  $("taskRows").innerHTML="";
-  addTaskInputRow({project:""});
+$("addTaskBtn").onclick=()=>{if(canAdmin())alert("Manajemen folder akan digunakan untuk membuat folder baru. Untuk menambah kerjaan, buka folder bulan terlebih dahulu.")};
+function openTaskModal(date){
+  $("newDate").value=date;
+  $("newLabel").value="";
+  $("newTitle").value="";
+  $("newProject").value=currentProject&&currentProject!=="Belum ditentukan"?currentProject:"";
+  fillPicSelect("newPic","");
   $("taskErr").textContent="";
   $("taskModal").classList.remove("hide");
-  setTimeout(()=>$("taskRows")?.querySelector(".taskRowTitle")?.focus(),30);
 }
-
 function closeTaskModal(){$("taskModal").classList.add("hide")}
-$("taskCancel").onclick=closeTaskModal;
-$("taskCancelTop").onclick=closeTaskModal;
-$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
-$("addTaskRow").onclick=()=>addTaskInputRow({project:""});
-
-$("taskSave").onclick=async()=>{
-  if(!canAdmin())return;
-
-  const date=$("newDate").value;
-  const label=$("newLabel").value.trim();
-  const rows=[...document.querySelectorAll(".taskInputRow")];
-
-  if(!date){
-    $("taskErr").textContent="Tanggal wajib diisi.";
-    return;
-  }
-
-  const entries=rows.map(row=>({
-    title:row.querySelector(".taskRowTitle").value.trim(),
-    project:row.querySelector(".taskRowProject").value.trim(),
-    pic:row.querySelector(".taskRowPic").value.trim()
-  })).filter(x=>x.title);
-
-  if(!entries.length){
-    $("taskErr").textContent="Minimal satu output harus diisi.";
-    return;
-  }
-
-  $("taskSave").disabled=true;
-  $("taskSave").textContent="Menyimpan...";
-
-  const payload=entries.map(x=>({
-    task_date:date,
-    batch_label:label||null,
-    title:x.title,
-    project_name:x.project||null,
-    pic:x.pic||null,
-    created_by:user.id
-  }));
-
-  const {error}=await sb.from("tasks").insert(payload);
-
-  $("taskSave").disabled=false;
-  $("taskSave").textContent="Tambah pekerjaan";
-
-  if(error){
-    $("taskErr").textContent=error.message;
-    return;
-  }
-
-  closeTaskModal();
-  await loadTasks();
-
-  // Tetap berada di folder bulan yang sedang dibuka.
-  if(currentProject){
-    const month=monthKey({task_date:date});
-    if(month===currentProject) openProject(currentProject);
-  }
-}
+$("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
+$("taskSave").onclick=async()=>{if(!canAdmin())return;const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
 
 function setPage(page){if(!canAdmin() && !["folders","calendar","team","settings"].includes(page)) page="folders";currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
@@ -808,8 +814,7 @@ function setPage(page){if(!canAdmin() && !["folders","calendar","team","settings
     if(page==="settings"){$("pageTitle").textContent="Settings";$("pageSub").textContent="Pengaturan akun pribadi."}
 }
 document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>{if(b.dataset.page==="folders")closeProject();setPage(b.dataset.page);window.scrollTo({top:0,behavior:"smooth"})});
-document.addEventListener("click",e=>{if(!e.target.closest(".jobMenuBtn")&&!e.target.closest(".jobMenu"))document.querySelectorAll(".jobMenu").forEach(x=>x.remove())});
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;["editModal","taskModal","agendaModal","jobDateModal"].forEach(id=>$(id).classList.add("hide"))});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;["editModal","taskModal","agendaModal"].forEach(id=>$(id).classList.add("hide"))});
 start();
 
 </script>
