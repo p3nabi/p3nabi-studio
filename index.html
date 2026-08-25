@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>p3nabi'studio</title>
+  <title>P3NABISTUDIO</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{--bg:#f6f6f3;--card:#fff;--text:#202020;--muted:#8b8b8b;--line:#e8e8e8;--accent:#e7b62f;--accent2:#c99508}
@@ -30,7 +30,7 @@
 <div id="login" class="login">
   <div class="box">
     <h1 style="margin-top:0">p3nabi'studio</h1>
-    <p class="sub">Team Content</p>
+    <p class="sub">Team Content Checklist</p>
     <label>Email</label><input id="email" type="email" placeholder="nama@email.com">
     <label>Password</label><input id="password" type="password" placeholder="Minimal 6 karakter">
     <div id="authErr" class="err"></div>
@@ -41,7 +41,7 @@
 
 <div class="wrap">
   <div class="top">
-    <div><div class="sub">TEAM WORKSPACE</div><h1>LIST KONTEN</h1></div>
+    <div><div class="sub">TEAM WORKSPACE</div><h1>LIST KERJAAN</h1></div>
     <button id="logout" class="pill logout">Keluar</button>
   </div>
   <div class="hero">
@@ -66,7 +66,7 @@
 <script>
   // Isi dua nilai ini dari Supabase Project Settings → API.
   const SUPABASE_URL = "https://zmiokfhuwzvedlmisocb.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptaW9rZmh1d3p2ZWRsbWlzb2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2Nzg1MzYsImV4cCI6MjEwMzI1NDUzNn0.fsN99Q5W_56O_b09OhaKOxsy1uk8KI6ka_1eV3735T4";
+  const SUPABASE_ANON_KEY = "sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
 
   let sb, user, tasks = [];
   const $ = id => document.getElementById(id);
