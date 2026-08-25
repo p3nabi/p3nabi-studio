@@ -13,7 +13,7 @@
     .pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-size:13px;cursor:pointer}
     .hero{margin:26px 0 18px;background:#202020;color:white;border-radius:22px;padding:20px}.hero b{font-size:14px}.bar{height:7px;background:#444;border-radius:10px;margin-top:13px;overflow:hidden}.fill{height:100%;background:var(--accent);width:0}
     .progress{margin-top:8px;font-size:12px;color:#bdbdbd}
-    .day{margin:24px 0}.date{font-size:24px;font-weight:800;letter-spacing:-.6px;margin:0 0 12px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+    .months{display:flex;flex-direction:column;gap:10px}.month{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.monthHeader{width:100%;border:0;background:#fff;padding:18px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-align:left}.monthName{font-size:19px;font-weight:800}.monthMeta{font-size:12px;color:#999;margin-left:auto;margin-right:12px}.chevron{font-size:18px;color:#888;transition:transform .2s}.month.open .chevron{transform:rotate(180deg)}.monthBody{display:none;padding:0 16px 16px}.month.open .monthBody{display:block}.day{margin:18px 0}.date{font-size:21px;font-weight:800;letter-spacing:-.6px;margin:0 0 10px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
     .task{display:flex;align-items:center;gap:13px;padding:15px 16px;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}
     .check{width:27px;height:27px;border-radius:50%;border:3px solid #c9c9c9;display:grid;place-items:center;flex:0 0 auto;cursor:pointer;background:#fff}
     .check.done{border-color:var(--accent);background:var(--accent)}.check.done:after{content:"✓";color:#fff;font-weight:900;font-size:17px;margin-top:-2px}
@@ -49,7 +49,7 @@
     <div class="bar"><div id="fill" class="fill"></div></div>
     <div id="progressText" class="progress">Memuat…</div>
   </div>
-  <div id="list"></div>
+  <div id="list" class="months"></div>
   <button id="addDay" class="add">＋ Tambah tanggal</button>
 </div>
 
@@ -66,6 +66,7 @@
   <div class="box">
     <h2 style="margin-top:0">Tambah pekerjaan</h2>
     <label>Tanggal</label><input id="newDate" type="date">
+    <label>Penanda tanggal (opsional)</label><input id="newLabel" placeholder="Contoh: 2 untuk tanggal kedua">
     <label>Nama pekerjaan</label><input id="newTitle" placeholder="Contoh: Upload TikTok">
     <div id="taskErr" class="err"></div>
     <div class="row"><button id="cancel" class="pill">Batal</button><button id="save" class="primary">Tambah</button></div>
@@ -118,27 +119,80 @@
   }
 
   function render(){
-    const groups={}; tasks.forEach(t=>(groups[t.task_date]??=[]).push(t));
-    let done=tasks.filter(t=>t.completed).length, total=tasks.length, pct=total?Math.round(done/total*100):0;
-    $("fill").style.width=pct+"%"; $("progressText").textContent=`${done} dari ${total} pekerjaan selesai · ${pct}%`;
-    $("list").innerHTML="";
-    Object.keys(groups).sort().forEach(date=>{
-      const d=new Date(date+"T00:00:00");
-      const label=d.toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"}).replaceAll("/","." );
-      const day=document.createElement("section"); day.className="day";
-      day.innerHTML=`<h2 class="date">${label}</h2><div class="card"></div>`;
-      const card=day.querySelector(".card");
-      groups[date].forEach(t=>{
-        const row=document.createElement("div"); row.className="task";
-        row.innerHTML=`<button class="check ${t.completed?"done":""}" aria-label="check"></button><div class="title ${t.completed?"doneText":""}">${escapeHtml(t.title)}</div><div class="actions"><button class="actionBtn editBtn" title="Edit">✎</button><button class="actionBtn deleteBtn" title="Hapus">×</button></div>`;
-        row.querySelector(".check").onclick=()=>toggle(t);
-        row.querySelector(".editBtn").onclick=()=>openEdit(t);
-        row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);
-        card.appendChild(row);
-      });
-      $("list").appendChild(day);
+    const months = {};
+    tasks.forEach(t=>{
+      const monthKey = t.task_date.slice(0,7);
+      (months[monthKey] ??= []).push(t);
     });
-    if(!tasks.length) $("list").innerHTML='<div class="empty">Belum ada pekerjaan.</div>';
+
+    let done=tasks.filter(t=>t.completed).length, total=tasks.length, pct=total?Math.round(done/total*100):0;
+    $("fill").style.width=pct+"%";
+    $("progressText").textContent=`${done} dari ${total} pekerjaan selesai · ${pct}%`;
+
+    const list=$("list");
+    list.innerHTML="";
+
+    Object.keys(months).sort().forEach(monthKey=>{
+      const items=months[monthKey].sort((a,b)=>{
+        const d=(a.task_date+"").localeCompare(b.task_date);
+        if(d!==0) return d;
+        return (a.created_at||"").localeCompare(b.created_at||"");
+      });
+
+      const monthDate=new Date(monthKey+"-01T00:00:00");
+      const monthName=monthDate.toLocaleDateString("id-ID",{month:"long",year:"numeric"});
+      const monthDone=items.filter(t=>t.completed).length;
+
+      const month=document.createElement("section");
+      month.className="month";
+      month.innerHTML=`
+        <button class="monthHeader" type="button">
+          <span class="monthName">${monthName}</span>
+          <span class="monthMeta">${monthDone}/${items.length} selesai</span>
+          <span class="chevron">⌄</span>
+        </button>
+        <div class="monthBody"></div>`;
+
+      const body=month.querySelector(".monthBody");
+      month.querySelector(".monthHeader").onclick=()=>month.classList.toggle("open");
+
+      const days={};
+      items.forEach(t=>{
+        const key=t.task_date+"|"+(t.batch_label||"");
+        (days[key]??=[]).push(t);
+      });
+
+      Object.keys(days).sort((a,b)=>{
+        const da=a.split("|")[0], db=b.split("|")[0];
+        return da.localeCompare(db);
+      }).forEach(key=>{
+        const dayItems=days[key];
+        const date=dayItems[0].task_date;
+        const labelSuffix=dayItems[0].batch_label ? "-"+dayItems[0].batch_label : "";
+        const d=new Date(date+"T00:00:00");
+        const label=d.toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"}).replaceAll("/",".")+labelSuffix;
+
+        const day=document.createElement("section");
+        day.className="day";
+        day.innerHTML=`<h2 class="date">${label}</h2><div class="card"></div>`;
+        const card=day.querySelector(".card");
+
+        dayItems.forEach(t=>{
+          const row=document.createElement("div");
+          row.className="task";
+          row.innerHTML=`<button class="check ${t.completed?"done":""}" aria-label="check"></button><div class="title ${t.completed?"doneText":""}">${escapeHtml(t.title)}</div><div class="actions"><button class="actionBtn editBtn" title="Edit">✎</button><button class="actionBtn deleteBtn" title="Hapus">×</button></div>`;
+          row.querySelector(".check").onclick=()=>toggle(t);
+          row.querySelector(".editBtn").onclick=()=>openEdit(t);
+          row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);
+          card.appendChild(row);
+        });
+        body.appendChild(day);
+      });
+
+      list.appendChild(month);
+    });
+
+    if(!tasks.length) list.innerHTML='<div class="empty">Belum ada pekerjaan.</div>';
   }
 
   let editingTask = null;
@@ -191,6 +245,7 @@
     $("modal").classList.add("hide");
     $("taskErr").textContent="";
     $("newTitle").value="";
+    if($("newLabel")) $("newLabel").value="";
   }
   $("addDay").onclick=()=>{
     $("modal").classList.remove("hide");
@@ -206,9 +261,9 @@
   });
   $("save").onclick=async()=>{
     $("taskErr").textContent="";
-    const date=$("newDate").value,title=$("newTitle").value.trim();
+    const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim();
     if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}
-    const {error}=await sb.from("tasks").insert({task_date:date,title,created_by:user.id});
+    const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,created_by:user.id});
     if(error) $("taskErr").textContent=error.message;
     else { closeModal(); }
   };
