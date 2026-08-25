@@ -45,7 +45,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
     <label>Email</label><input id="email" type="email" placeholder="nama@email.com">
     <label>Password</label><input id="password" type="password" placeholder="Minimal 6 karakter">
     <div id="authErr" class="err"></div>
-    <button id="loginBtn" class="primary" style="width:100%">Masuk / Daftar</button>
+    <button id="loginBtn" class="primary" style="width:100%">Masuk</button>
+    <div style="font-size:12px;color:#888;text-align:center;margin-top:10px">Akses hanya untuk anggota yang diundang oleh Super Admin.</div>
     <p style="font-size:11px;color:#77737f;line-height:1.6">Akun baru dibuat otomatis. Jika email confirmation aktif, cek email sebelum masuk.</p>
   </div>
 </div>
@@ -193,7 +194,7 @@ $("loginBtn").onclick=async()=>{
  $("authErr").textContent="";const email=$("email").value.trim(),password=$("password").value;
  if(!email||password.length<6){$("authErr").textContent="Isi email dan password minimal 6 karakter.";return}
  let r=await sb.auth.signInWithPassword({email,password});
- if(r.error){r=await sb.auth.signUp({email,password});if(r.error)$("authErr").textContent=r.error.message;else $("authErr").textContent="Akun dibuat. Jika email confirmation aktif, cek email lalu masuk kembali."}
+ if(r.error)$("authErr").textContent="Email belum diundang, belum terverifikasi, atau password salah. Hubungi Super Admin.";
 }
 $("logout").onclick=()=>sb.auth.signOut();
 
