@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ECKO SHOW — Team Checklist</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#f6f6f3;--card:#fff;--text:#202020;--muted:#8b8b8b;--line:#e8e8e8;--accent:#e7b62f;--accent2:#c99508}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",Arial,sans-serif}
+    .wrap{max-width:760px;margin:auto;padding:28px 18px 80px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+    h1{font-size:30px;letter-spacing:-1.2px;margin:8px 0 4px;font-weight:800}.sub{color:var(--muted);font-size:14px}
+    .pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-size:13px;cursor:pointer}
+    .hero{margin:26px 0 18px;background:#202020;color:white;border-radius:22px;padding:20px}.hero b{font-size:14px}.bar{height:7px;background:#444;border-radius:10px;margin-top:13px;overflow:hidden}.fill{height:100%;background:var(--accent);width:0}
+    .progress{margin-top:8px;font-size:12px;color:#bdbdbd}
+    .day{margin:24px 0}.date{font-size:24px;font-weight:800;letter-spacing:-.6px;margin:0 0 12px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+    .task{display:flex;align-items:center;gap:13px;padding:15px 16px;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}
+    .check{width:27px;height:27px;border-radius:50%;border:3px solid #c9c9c9;display:grid;place-items:center;flex:0 0 auto;cursor:pointer;background:#fff}
+    .check.done{border-color:var(--accent);background:var(--accent)}.check.done:after{content:"✓";color:#fff;font-weight:900;font-size:17px;margin-top:-2px}
+    .title{font-size:16px;font-weight:650}.doneText{text-decoration:line-through;color:#9b9b9b}.who{margin-left:auto;font-size:11px;color:#999}
+    .add{margin-top:10px;border:1px dashed #cfcfcf;background:transparent;border-radius:14px;padding:11px;width:100%;color:#777;cursor:pointer}
+    .login{position:fixed;inset:0;background:rgba(246,246,243,.98);display:grid;place-items:center;padding:20px;z-index:5}.box{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.08)}
+    input{width:100%;padding:13px 14px;border:1px solid #ddd;border-radius:12px;margin:6px 0 10px;font-size:15px;outline:none}button.primary{width:100%;padding:13px;border:0;border-radius:13px;background:#202020;color:#fff;font-weight:700;cursor:pointer}
+    .hint{font-size:12px;color:#888;line-height:1.5}.err{color:#b42318;font-size:13px;margin:8px 0}.hide{display:none}.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;padding:20px;z-index:4}
+    .modal .box{max-width:440px}.row{display:flex;gap:8px}.row button{flex:1}
+    .logout{color:#a33}.empty{padding:24px;color:#999;text-align:center}
+  </style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="box">
+    <h1 style="margin-top:0">ECKO SHOW</h1>
+    <p class="sub">Team Content Checklist</p>
+    <label>Email</label><input id="email" type="email" placeholder="nama@email.com">
+    <label>Password</label><input id="password" type="password" placeholder="Minimal 6 karakter">
+    <div id="authErr" class="err"></div>
+    <button id="loginBtn" class="primary">Masuk / Daftar</button>
+    <p class="hint">Akun pertama kali akan dibuat otomatis. Setelah login, semua anggota tim yang memiliki akun dapat melihat dan mencentang checklist yang sama.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="top">
+    <div><div class="sub">TEAM WORKSPACE</div><h1>LIST KONTEN ECKO SHOW</h1></div>
+    <button id="logout" class="pill logout">Keluar</button>
+  </div>
+  <div class="hero">
+    <b id="todayLabel">Progress</b>
+    <div class="bar"><div id="fill" class="fill"></div></div>
+    <div id="progressText" class="progress">Memuat…</div>
+  </div>
+  <div id="list"></div>
+  <button id="addDay" class="add">＋ Tambah tanggal</button>
+</div>
+
+<div id="modal" class="modal hide">
+  <div class="box">
+    <h2 style="margin-top:0">Tambah pekerjaan</h2>
+    <label>Tanggal</label><input id="newDate" type="date">
+    <label>Nama pekerjaan</label><input id="newTitle" placeholder="Contoh: Upload TikTok">
+    <div id="taskErr" class="err"></div>
+    <div class="row"><button id="cancel" class="pill">Batal</button><button id="save" class="primary">Tambah</button></div>
+  </div>
+</div>
+
+<script>
+  // Isi dua nilai ini dari Supabase Project Settings → API.
+  const SUPABASE_URL = "sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptaW9rZmh1d3p2ZWRsbWlzb2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2Nzg1MzYsImV4cCI6MjEwMzI1NDUzNn0.fsN99Q5W_56O_b09OhaKOxsy1uk8KI6ka_1eV3735T4";
+
+  let sb, user, tasks = [];
+  const $ = id => document.getElementById(id);
+
+  function configured(){ return !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_"); }
+
+  async function start(){
+    if(!configured()){
+      $("authErr").textContent = "Prototype siap. Isi SUPABASE_URL dan SUPABASE_ANON_KEY di file index.html terlebih dahulu.";
+      $("loginBtn").disabled = true; return;
+    }
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const {data:{session}} = await sb.auth.getSession();
+    if(session){ user=session.user; $("login").classList.add("hide"); await load(); }
+    sb.auth.onAuthStateChange(async (_e,session)=>{
+      user=session?.user||null;
+      if(user){$("login").classList.add("hide"); await load();}
+      else $("login").classList.remove("hide");
+    });
+  }
+
+  $("loginBtn").onclick = async()=>{
+    $("authErr").textContent="";
+    const email=$("email").value.trim(), password=$("password").value;
+    if(!email||password.length<6){$("authErr").textContent="Isi email dan password minimal 6 karakter.";return}
+    let {error}=await sb.auth.signInWithPassword({email,password});
+    if(error){
+      const r=await sb.auth.signUp({email,password});
+      if(r.error) $("authErr").textContent=r.error.message;
+      else $("authErr").textContent="Akun dibuat. Jika email confirmation aktif, cek email lalu masuk kembali.";
+    }
+  };
+  $("logout").onclick=()=>sb.auth.signOut();
+
+  async function load(){
+    const {data,error}=await sb.from("tasks").select("*").order("task_date").order("created_at");
+    if(error){alert(error.message);return}
+    tasks=data||[]; render();
+    sb.channel("tasks-live").on("postgres_changes",{event:"*",schema:"public",table:"tasks"},()=>load()).subscribe();
+  }
+
+  function render(){
+    const groups={}; tasks.forEach(t=>(groups[t.task_date]??=[]).push(t));
+    let done=tasks.filter(t=>t.completed).length, total=tasks.length, pct=total?Math.round(done/total*100):0;
+    $("fill").style.width=pct+"%"; $("progressText").textContent=`${done} dari ${total} pekerjaan selesai · ${pct}%`;
+    $("list").innerHTML="";
+    Object.keys(groups).sort().forEach(date=>{
+      const d=new Date(date+"T00:00:00");
+      const label=d.toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"}).replaceAll("/","." );
+      const day=document.createElement("section"); day.className="day";
+      day.innerHTML=`<h2 class="date">${label}</h2><div class="card"></div>`;
+      const card=day.querySelector(".card");
+      groups[date].forEach(t=>{
+        const row=document.createElement("div"); row.className="task";
+        row.innerHTML=`<button class="check ${t.completed?"done":""}" aria-label="check"></button><div class="title ${t.completed?"doneText":""}">${escapeHtml(t.title)}</div>`;
+        if(t.completed && t.completed_by) { const who=document.createElement("div"); who.className="who"; who.textContent="selesai"; row.appendChild(who); }
+        row.querySelector(".check").onclick=()=>toggle(t);
+        card.appendChild(row);
+      });
+      $("list").appendChild(day);
+    });
+    if(!tasks.length) $("list").innerHTML='<div class="empty">Belum ada pekerjaan.</div>';
+  }
+
+  async function toggle(t){
+    const {error}=await sb.from("tasks").update({
+      completed:!t.completed,
+      completed_by:!t.completed ? user.id : null,
+      completed_at:!t.completed ? new Date().toISOString() : null
+    }).eq("id",t.id);
+    if(error) alert(error.message);
+  }
+
+  $("addDay").onclick=()=>{$("modal").classList.remove("hide");$("newDate").value=new Date().toISOString().slice(0,10);$("newTitle").focus()};
+  $("cancel").onclick=()=>{$("modal").classList.add("hide");$("taskErr").textContent=""};
+  $("save").onclick=async()=>{
+    $("taskErr").textContent="";
+    const date=$("newDate").value,title=$("newTitle").value.trim();
+    if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}
+    const {error}=await sb.from("tasks").insert({task_date:date,title,created_by:user.id});
+    if(error) $("taskErr").textContent=error.message;
+    else {$("newTitle").value="";$("modal").classList.add("hide");}
+  };
+  function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+  start();
+</script>
+</body>
+</html>
