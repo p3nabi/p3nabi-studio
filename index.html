@@ -55,7 +55,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
     <div class="brand"><div class="brandName">p3nabi'studio</div><div class="brandSub">VIDEOGRAPHY & EDITING</div></div>
     <nav class="nav">
       <button class="navBtn active" data-page="dashboard"><span class="navIcon">▦</span><span>Dashboard</span></button>
-      <button class="navBtn" data-page="folders"><span class="navIcon">▰</span><span>Semua Folder</span></button>
+      <button class="navBtn" data-page="folders"><span class="navIcon">▰</span><span>Kerjaan</span></button>
       <button class="navBtn" data-page="calendar"><span class="navIcon">□</span><span>Calendar</span></button>
       <button class="navBtn" data-page="team"><span class="navIcon">♧</span><span>Team</span></button>
       <button class="navBtn" data-page="settings"><span class="navIcon">⚙</span><span>Settings</span></button>
@@ -91,7 +91,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 
     <section id="page-folders" class="page">
       <div id="folderHome">
-        <div class="sectionHead"><div><h2>Semua Folder</h2><p>Semua project dan checklist tim tersimpan di sini.</p></div><button class="primary" id="addTaskBtn">＋ Tambah pekerjaan</button></div>
+        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary" id="addTaskBtn">＋ Tambah pekerjaan</button></div>
         <div id="foldersGrid" class="folderGrid"></div>
       </div>
       <div id="projectView" class="hide"></div>
@@ -241,21 +241,43 @@ function renderDashboard(){
 }
 
 function folderData(){
- const m={};tasks.forEach(t=>{const n=projectName(t);(m[n]??=[]).push(t)});return m;
+ const m={};
+ tasks.forEach(t=>{const k=monthKey(t);(m[k]??=[]).push(t)});
+ return m;
 }
-function folderCard(name,items){
+function folderCard(month,items){
  const status=statusFor(items),done=items.filter(t=>t.completed).length;
- const el=document.createElement("button");el.className=`folderCard status-${status}`;el.type="button";el.innerHTML=`<span class="folderDots">⋮</span><div class="folderIcon ${status}"></div><div class="folderName">${esc(name)}</div><div class="folderStats">${items.length} pekerjaan<strong>${done}/${items.length} selesai</strong></div>`;el.onclick=()=>openProject(name);return el;
+ const el=document.createElement("button");el.className=`folderCard status-${status}`;el.type="button";
+ el.innerHTML=`<span class="folderDots">⋮</span><div class="folderIcon ${status}"></div><div class="folderName">${esc(monthLabel(month))}</div><div class="folderStats">${items.length} pekerjaan<strong>${done}/${items.length} selesai</strong></div>`;
+ el.onclick=()=>openProject(month);return el;
 }
 function renderFolders(){
- const m=folderData(),grid=$("foldersGrid");grid.innerHTML="";Object.entries(m).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([n,items])=>grid.appendChild(folderCard(n,items)));if(!Object.keys(m).length)grid.innerHTML='<div class="empty">Belum ada project.</div>';
+ const m=folderData(),grid=$("foldersGrid");grid.innerHTML="";
+ Object.entries(m).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([month,items])=>grid.appendChild(folderCard(month,items)));
+ if(!Object.keys(m).length)grid.innerHTML='<div class="empty">Belum ada pekerjaan.</div>';
 }
-function openProject(name){
- currentProject=name;$("folderHome").classList.add("hide");const root=$("projectView");root.classList.remove("hide");const items=folderData()[name]||[],done=items.filter(t=>t.completed).length;
- root.innerHTML=`<div class="folderViewHead"><div><div class="eyebrow">Project Folder</div><div style="font-size:24px;font-weight:850;margin-top:3px">${esc(name)}</div><div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai</div></div><button class="backBtn" id="backProjects">← Semua Folder</button></div>`;
+function openProject(month){
+ currentProject=month;$("folderHome").classList.add("hide");const root=$("projectView");root.classList.remove("hide");
+ const items=(folderData()[month]||[]).slice().sort((a,b)=>(a.task_date||"").localeCompare(b.task_date||"") || String(a.batch_label||"").localeCompare(String(b.batch_label||"")));
+ const done=items.filter(t=>t.completed).length;
+ root.innerHTML=`<div class="folderViewHead"><div><div class="eyebrow">KERJAAN BULANAN</div><div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div><div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai</div></div><button class="backBtn" id="backProjects">← Kerjaan</button></div>`;
  $("backProjects").onclick=()=>closeProject();
  const days={};items.forEach(t=>{const k=t.task_date+"|"+(t.batch_label||"");(days[k]??=[]).push(t)});
- Object.keys(days).sort().forEach(k=>{const di=days[k],sec=document.createElement("section");sec.className="day";const d=di[0],dd=di.filter(x=>x.completed).length;sec.innerHTML=`<div class="dateLine"><h3 class="date">${d.task_date.split("-").reverse().join(".")}${d.batch_label?"-"+d.batch_label:""}</h3><div class="dateMeta">${dd}/${di.length} selesai</div></div><div class="taskCard"></div>`;const card=sec.querySelector(".taskCard");di.forEach(t=>{const row=document.createElement("div");row.className="task";row.innerHTML=`<button class="check ${t.completed?"done":""}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}</div></div><div class="actions"><button class="actionBtn editBtn">✎</button><button class="actionBtn deleteBtn">×</button></div>`;row.querySelector(".check").onclick=()=>toggle(t);row.querySelector(".editBtn").onclick=()=>openEdit(t);row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);card.appendChild(row)});root.appendChild(sec)});
+ Object.keys(days).sort().forEach(k=>{
+   const di=days[k],sec=document.createElement("section");sec.className="day";
+   const d=di[0],dd=di.filter(x=>x.completed).length;
+   sec.innerHTML=`<div class="dateLine"><h3 class="date">${d.task_date.split("-").reverse().join(".")}${d.batch_label?"-"+esc(d.batch_label):""}</h3><div class="dateMeta">${dd}/${di.length} selesai</div></div><div class="taskCard"></div>`;
+   const card=sec.querySelector(".taskCard");
+   di.forEach(t=>{
+     const row=document.createElement("div");row.className="task";
+     row.innerHTML=`<button class="check ${t.completed?"done":""}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}${t.project_name?" · "+esc(t.project_name):""}</div></div><div class="actions"><button class="actionBtn editBtn">✎</button><button class="actionBtn deleteBtn">×</button></div>`;
+     row.querySelector(".check").onclick=()=>toggle(t);
+     row.querySelector(".editBtn").onclick=()=>openEdit(t);
+     row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);
+     card.appendChild(row);
+   });
+   root.appendChild(sec);
+ });
 }
 function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("folderHome").classList.remove("hide");renderFolders()}
 
@@ -311,7 +333,7 @@ $("taskSave").onclick=async()=>{const date=$("newDate").value,label=$("newLabel"
 
 function setPage(page){currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
- if(page==="folders"){$("pageTitle").textContent="Semua Folder";$("pageSub").textContent="Semua project dan checklist tim."}
+ if(page==="folders"){$("pageTitle").textContent="Kerjaan";$("pageSub").textContent="Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan."}
  if(page==="calendar"){$("pageTitle").textContent="Calendar";$("pageSub").textContent="Agenda dan tanggal penting tim."}
  if(page==="team"){$("pageTitle").textContent="Team";$("pageSub").textContent="Anggota tim dan jobdesk."}
  if(page==="settings"){$("pageTitle").textContent="Settings";$("pageSub").textContent="Pengaturan akun pribadi."}
