@@ -20,7 +20,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 .nav{display:flex;flex-direction:column;gap:5px}.navBtn{border:0;background:transparent;color:#aaa6b4;text-align:left;padding:12px 14px;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:650}.navBtn:hover{background:#17151f;color:#fff}.navBtn.active{background:linear-gradient(90deg,#5e2e91,#251b34 75%,transparent);color:#fff;box-shadow:inset 3px 0 var(--purple)}.navIcon{width:22px;text-align:center;font-size:18px}
 .workspace{margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}.workspaceLabel{font-size:11px;color:#b2aebc;margin:0 12px 10px;letter-spacing:.5px}.workspaceCard{border:1px solid var(--line);background:#14141b;border-radius:14px;padding:13px;display:flex;gap:10px;align-items:center}.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#9f5cff,#f2a0ff);display:grid;place-items:center;font-weight:900;color:#fff;font-size:12px;overflow:hidden;flex:0 0 auto}.avatar img{width:100%;height:100%;object-fit:cover}.workspaceCard b{font-size:13px}.workspaceCard small{display:block;color:#888;font-size:11px;margin-top:3px}
 .sidebarQuote{margin-top:auto;padding:20px 12px 4px;color:#a9a4b1;font-size:12px;line-height:1.8}.quoteMark{color:#a95dff;font-size:36px;line-height:20px}.signature{margin-top:12px;color:#eee;font-family:cursive;font-size:20px}
-.main{min-width:0;padding:32px 42px 50px}.content{max-width:1180px;margin:0 auto}.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}.eyebrow{color:#c9c5d0;font-size:13px}.pageTitle{font-size:31px;letter-spacing:-1.5px;margin:5px 0 7px;font-weight:850}.pageSub{color:#9b98a4;font-size:14px}.userArea{display:flex;align-items:center;gap:12px}.userInfo{text-align:right}.userInfo b{display:block;font-size:13px}.userInfo small{color:#8c8995;font-size:11px}.userAvatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#4e4e5b,#f0a879);display:grid;place-items:center;font-size:12px;font-weight:800;overflow:hidden}.userAvatar img{width:100%;height:100%;object-fit:cover}.logout{border:1px solid var(--line);background:#13131a;color:#e6e2ea;border-radius:10px;padding:9px 12px}
+.main{min-width:0;padding:32px 42px 50px}.content{max-width:1180px;margin:0 auto}.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}.eyebrow{color:#c9c5d0;font-size:13px}.pageTitle{font-size:31px;letter-spacing:-1.5px;margin:5px 0 7px;font-weight:850}.pageSub{color:#9b98a4;font-size:14px}.userArea{display:flex;align-items:center;gap:12px}.userInfo{text-align:right}.userInfo b{display:block;font-size:13px}.userInfo small{color:#8c8995;font-size:11px}.userAvatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#4e4e5b,#f0a879);display:grid;place-items:center;font-size:12px;font-weight:800;overflow:hidden}.userAvatar img{width:100%;height:100%;object-fit:cover}.logout{border:1px solid var(--line);background:#13131a;color:#e6e2ea;border-radius:10px;padding:9px 12px}.readonlyNote{border:1px solid #3b3150;background:#15111d;color:#bca9d0;border-radius:12px;padding:10px 12px;font-size:11px;margin-bottom:14px}.adminOnly{}
 .page{display:none}.page.active{display:block}.stats{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:14px}.statCard,.panel{border:1px solid var(--line);background:linear-gradient(145deg,rgba(25,24,33,.94),rgba(14,14,20,.94));border-radius:18px}.statCard{padding:22px}.statLabel{font-size:12px;color:#aaa6b3;text-transform:uppercase;letter-spacing:.7px}.bigStat{font-size:34px;font-weight:850;margin-top:10px;letter-spacing:-1.5px}.bigStat span{font-size:14px;color:#aaa6b3;font-weight:500;letter-spacing:0}.miniRow{display:flex;justify-content:space-between;align-items:center;margin-top:14px;color:#aaa6b3;font-size:12px}.progressBar{height:8px;background:#292833;border-radius:99px;overflow:hidden;margin-top:12px}.progressFill{height:100%;background:linear-gradient(90deg,#9145ff,#bf78ff);border-radius:99px}
 .sectionHead{display:flex;align-items:center;justify-content:space-between;margin:28px 0 12px}.sectionHead h2{font-size:16px;margin:0}.sectionHead p{font-size:12px;color:var(--muted);margin:5px 0 0}.yearSelect,.filterSelect{border:1px solid var(--line);background:#14141b;color:#eee;border-radius:9px;padding:8px 11px}
 .recapGrid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}.recapCard{padding:20px}.recapTitle{font-weight:750;font-size:13px}.yearProjects{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:16px}.yearBox{background:#171720;border:1px solid #292735;border-radius:12px;padding:12px}.yearBox b{font-size:20px}.yearBox small{display:block;color:#85818d;font-size:10px;margin-top:5px}
@@ -67,7 +67,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
   <main class="main"><div class="content">
     <header class="topbar">
       <div><div class="eyebrow">Selamat datang kembali,</div><div class="pageTitle" id="pageTitle">Team Content 👋</div><div class="pageSub" id="pageSub">Recap project, pekerjaan, dan performa tim.</div></div>
-      <div class="userArea"><div class="userInfo"><b id="userName">p3nabi'</b><small id="userJob">Team Content</small></div><div class="userAvatar" id="userAvatar">P3</div><button id="logout" class="logout">Keluar</button></div>
+      <div class="userArea"><div class="userInfo"><b id="userName">p3nabi'</b><small id="userJob">Team Content</small><small id="userRole" style="color:#b36bff;margin-top:3px">Karyawan</small></div><div class="userAvatar" id="userAvatar">P3</div><button id="logout" class="logout">Keluar</button></div>
     </header>
 
     <section id="page-dashboard" class="page active">
@@ -75,12 +75,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
         <div class="statCard"><div class="statLabel">Progress keseluruhan</div><div class="bigStat" id="overallPct">0% <span>pekerjaan selesai</span></div><div class="progressBar"><div id="overallFill" class="progressFill"></div></div><div class="miniRow"><span id="overallDone">0 dari 0</span><span id="overallRemain">0 tersisa</span></div></div>
         <div class="statCard"><div class="statLabel">Project per tahun</div><div class="bigStat" id="yearProjectCount">0</div><div class="miniRow"><span id="yearTaskCount">0 pekerjaan</span><select id="yearSelect" class="yearSelect"></select></div></div>
         <div class="statCard"><div class="statLabel">PIC tahun ini</div><div class="bigStat" id="picCount">0</div><div class="miniRow"><span>terdaftar</span><span id="unassignedCount">0 tanpa PIC</span></div></div>
-      </div>
-      <div class="legend">
-        <div class="legendTitle">Keterangan warna folder</div>
-        <div class="legendItem"><span class="legendFolder red"></span><div><b>Merah</b> Belum selesai</div></div>
-        <div class="legendItem"><span class="legendFolder orange"></span><div><b>Oranye</b> Sebagian selesai</div></div>
-        <div class="legendItem"><span class="legendFolder green"></span><div><b>Hijau</b> Semua selesai</div></div>
       </div>
       <div class="sectionHead"><div><h2>Recap Project</h2><p>Ringkasan project dan total pekerjaan untuk tahun yang dipilih.</p></div></div>
       <div class="recapGrid">
@@ -91,7 +85,14 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 
     <section id="page-folders" class="page">
       <div id="folderHome">
-        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary" id="addTaskBtn">＋ Tambah pekerjaan</button></div>
+        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary adminOnly" id="addTaskBtn">＋ Tambah pekerjaan</button></div>
+      <div class="legend">
+        <div class="legendTitle">Keterangan warna folder</div>
+        <div class="legendItem"><span class="legendFolder red"></span><div><b>Merah</b> Belum selesai</div></div>
+        <div class="legendItem"><span class="legendFolder orange"></span><div><b>Oranye</b> Sebagian selesai</div></div>
+        <div class="legendItem"><span class="legendFolder green"></span><div><b>Hijau</b> Semua selesai</div></div>
+      </div>
+        <div id="readonlyNote" class="readonlyNote hide">Mode karyawan: kamu hanya dapat menceklis / membatalkan pekerjaan. Penambahan, edit, dan penghapusan pekerjaan hanya untuk Super Admin.</div>
         <div id="foldersGrid" class="folderGrid"></div>
       </div>
       <div id="projectView" class="hide"></div>
@@ -115,7 +116,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
     </section>
 
     <section id="page-settings" class="page">
-      <div class="sectionHead"><div><h2>Settings</h2><p>Atur profil akun kamu sendiri.</p></div></div>
+      <div class="sectionHead"><div><h2>Settings</h2><p>Atur profil akun kamu sendiri. Role ditentukan oleh sistem.</p></div></div>
       <div class="settingsGrid">
         <div class="panel settingsCard">
           <div class="recapTitle">Profil</div>
@@ -162,6 +163,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 const SUPABASE_URL="https://zmiokfhuwzvedlmisocb.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
 let sb,user,tasks=[],profiles=[],agendas=[],realtimeChannel=null,currentPage="dashboard",currentProject=null;
+let isSuperAdmin=false;
 let calDate=new Date();calDate.setDate(1);let selectedDate=new Date().toISOString().slice(0,10);
 
 const $=id=>document.getElementById(id);
@@ -174,6 +176,8 @@ const statusFor=items=>{const d=items.filter(t=>t.completed).length;return d===0
 const monthLabel=k=>new Date(k+"-01T00:00:00").toLocaleDateString("id-ID",{month:"long",year:"numeric"});
 function avatarHtml(p,size=""){return p?.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:esc(initials(p?.username||p?.email||"P3"))}
 function getProfile(id=user?.id){return profiles.find(p=>p.id===id)}
+function roleOf(){const p=getProfile();return p?.role||((user?.email||"").toLowerCase()==="haniffabaz@gmail.com"?"super_admin":"employee")}
+function canAdmin(){return isSuperAdmin || roleOf()==="super_admin" || (user?.email||"").toLowerCase()==="haniffabaz@gmail.com"}
 function years(){return [...new Set(tasks.map(yearOf))].sort((a,b)=>b-a)}
 function currentYear(){return $("yearSelect")?.value||years()[0]||String(new Date().getFullYear())}
 
@@ -208,18 +212,31 @@ async function ensureProfile(){
  const {data}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
  if(!data){
   const name=user.email?.split("@")[0]||"p3nabi";
-  await sb.from("profiles").insert({id:user.id,username:name,jobdesk:"Team Content"});
+  await sb.from("profiles").insert({id:user.id,username:name,jobdesk:"Team Content",role:(user.email||"").toLowerCase()==="haniffabaz@gmail.com"?"super_admin":"employee"});
  }
 }
 async function loadTasks(){const r=await sb.from("tasks").select("*").order("task_date").order("created_at");if(!r.error){tasks=r.data||[];renderAll()}}
-async function loadProfiles(){const r=await sb.from("profiles").select("*").order("username");if(!r.error){profiles=r.data||[];renderAll();renderSettings()}}
+async function loadProfiles(){const r=await sb.from("profiles").select("*").order("username");if(!r.error){profiles=r.data||[];isSuperAdmin=canAdmin();renderAll();renderSettings()}}
 async function loadAgendas(){const r=await sb.from("agendas").select("*").order("agenda_date").order("agenda_time");if(!r.error){agendas=r.data||[];renderCalendar()}}
 function userUI(){
  const p=getProfile()||{username:user?.email?.split("@")[0]||"p3nabi",jobdesk:"Team Content"};
- $("userName").textContent=p.username||"p3nabi";$("userJob").textContent=p.jobdesk||"Team Content";$("sideJob").textContent=p.jobdesk||"Team Content";
+ $("userName").textContent=p.username||"p3nabi";$("userJob").textContent=p.jobdesk||"Team Content";$("sideJob").textContent=p.jobdesk||"Team Content";$("userRole").textContent=canAdmin()?"Super Admin":"Karyawan";
  $("userAvatar").innerHTML=avatarHtml(p);$("sideAvatar").innerHTML=avatarHtml(p);
 }
-function renderAll(){userUI();renderDashboard();renderFolders();renderTeam();fillYears()}
+function renderAll(){userUI();renderDashboard();renderFolders();renderTeam();fillYears();applyPermissions()}
+function applyPermissions(){
+  const admin=canAdmin();
+  document.querySelectorAll(".adminOnly").forEach(el=>el.classList.toggle("hide",!admin));
+  $("readonlyNote")?.classList.toggle("hide",admin);
+  document.querySelectorAll('.navBtn').forEach(btn=>{
+    const page=btn.dataset.page;
+    // Karyawan hanya melihat Kerjaan + Settings akun pribadi.
+    const allowed=admin || page==="folders" || page==="settings";
+    btn.classList.toggle("hide",!allowed);
+  });
+  if(!admin && !["folders","settings"].includes(currentPage)) setPage("folders");
+}
+
 function fillYears(){
  const ys=years();if(!ys.length)ys=[String(new Date().getFullYear())];
  const old=$("yearSelect").value;$("yearSelect").innerHTML=ys.map(y=>`<option value="${y}">${y}</option>`).join("");$("yearSelect").value=ys.includes(old)?old:ys[0];
@@ -319,11 +336,11 @@ $("avatarFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)retur
 $("savePassword").onclick=async()=>{const pass=$("newPassword").value;if(pass.length<6){$("passwordErr").textContent="Password minimal 6 karakter.";return}const {error}=await sb.auth.updateUser({password:pass});if(error)$("passwordErr").textContent=error.message;else{$("passwordErr").textContent="Password berhasil diubah.";$("newPassword").value=""}}
 
 let editingTask=null;
-function openEdit(t){editingTask=t;$("editTitle").value=t.title;$("editProject").value=t.project_name||"";$("editPic").value=t.pic||"";$("editErr").textContent="";$("editModal").classList.remove("hide")}
+function openEdit(t){if(!canAdmin())return;editingTask=t;$("editTitle").value=t.title;$("editProject").value=t.project_name||"";$("editPic").value=t.pic||"";$("editErr").textContent="";$("editModal").classList.remove("hide")}
 function closeEdit(){$("editModal").classList.add("hide");editingTask=null}
 $("editCancel").onclick=closeEdit;$("editModal").onclick=e=>{if(e.target.id==="editModal")closeEdit()}
-$("editSave").onclick=async()=>{if(!editingTask)return;const title=$("editTitle").value.trim(),project=$("editProject").value.trim(),pic=$("editPic").value.trim();if(!title){$("editErr").textContent="Nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").update({title,project_name:project||null,pic:pic||null}).eq("id",editingTask.id);if(error)$("editErr").textContent=error.message;else{closeEdit();await loadTasks()}}
-async function deleteTask(t){if(!confirm(`Hapus pekerjaan "${t.title}"?`))return;const {error}=await sb.from("tasks").delete().eq("id",t.id);if(error)alert(error.message);else await loadTasks()}
+$("editSave").onclick=async()=>{if(!canAdmin())return;if(!editingTask)return;const title=$("editTitle").value.trim(),project=$("editProject").value.trim(),pic=$("editPic").value.trim();if(!title){$("editErr").textContent="Nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").update({title,project_name:project||null,pic:pic||null}).eq("id",editingTask.id);if(error)$("editErr").textContent=error.message;else{closeEdit();await loadTasks()}}
+async function deleteTask(t){if(!canAdmin())return;if(!confirm(`Hapus pekerjaan "${t.title}"?`))return;const {error}=await sb.from("tasks").delete().eq("id",t.id);if(error)alert(error.message);else await loadTasks()}
 async function toggle(t){
   const next=!Boolean(t.completed);
   const {error}=await sb.from("tasks").update({
@@ -343,13 +360,13 @@ async function toggle(t){
   renderAll();
   if(currentProject) openProject(currentProject);
 }
-$("addTaskBtn").onclick=()=>openTaskModal(new Date().toISOString().slice(0,10));
+$("addTaskBtn").onclick=()=>{if(canAdmin())openTaskModal(new Date().toISOString().slice(0,10))};
 function openTaskModal(date){$("newDate").value=date;$("newLabel").value="";$("newTitle").value="";$("newProject").value=currentProject&&currentProject!=="Belum ditentukan"?currentProject:"";$("newPic").value=getProfile()?.username||"";$("taskErr").textContent="";$("taskModal").classList.remove("hide")}
 function closeTaskModal(){$("taskModal").classList.add("hide")}
 $("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
-$("taskSave").onclick=async()=>{const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
+$("taskSave").onclick=async()=>{if(!canAdmin())return;const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
 
-function setPage(page){currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
+function setPage(page){if(!canAdmin() && !["folders","settings"].includes(page)) page="folders";currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
  if(page==="folders"){$("pageTitle").textContent="Kerjaan";$("pageSub").textContent="Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan."}
  if(page==="calendar"){$("pageTitle").textContent="Calendar";$("pageSub").textContent="Agenda dan tanggal penting tim."}
