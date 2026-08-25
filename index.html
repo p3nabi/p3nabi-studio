@@ -30,7 +30,7 @@
 <div id="login" class="login">
   <div class="box">
     <h1 style="margin-top:0">p3nabi'studio</h1>
-    <p class="sub">Team Content Checklist</p>
+    <p class="sub">Team Content</p>
     <label>Email</label><input id="email" type="email" placeholder="nama@email.com">
     <label>Password</label><input id="password" type="password" placeholder="Minimal 6 karakter">
     <div id="authErr" class="err"></div>
@@ -140,15 +140,30 @@
     if(error) alert(error.message);
   }
 
-  $("addDay").onclick=()=>{$("modal").classList.remove("hide");$("newDate").value=new Date().toISOString().slice(0,10);$("newTitle").focus()};
-  $("cancel").onclick=()=>{$("modal").classList.add("hide");$("taskErr").textContent=""};
+  function closeModal(){
+    $("modal").classList.add("hide");
+    $("taskErr").textContent="";
+    $("newTitle").value="";
+  }
+  $("addDay").onclick=()=>{
+    $("modal").classList.remove("hide");
+    $("newDate").value=new Date().toISOString().slice(0,10);
+    $("newTitle").focus();
+  };
+  $("cancel").onclick=(e)=>{ e.preventDefault(); closeModal(); };
+  $("modal").addEventListener("click",(e)=>{
+    if(e.target === $("modal")) closeModal();
+  });
+  document.addEventListener("keydown",(e)=>{
+    if(e.key === "Escape" && !$("modal").classList.contains("hide")) closeModal();
+  });
   $("save").onclick=async()=>{
     $("taskErr").textContent="";
     const date=$("newDate").value,title=$("newTitle").value.trim();
     if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}
     const {error}=await sb.from("tasks").insert({task_date:date,title,created_by:user.id});
     if(error) $("taskErr").textContent=error.message;
-    else {$("newTitle").value="";$("modal").classList.add("hide");}
+    else { closeModal(); }
   };
   function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
   start();
