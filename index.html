@@ -13,7 +13,9 @@
     .pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-size:13px;cursor:pointer}
     .hero{margin:26px 0 18px;background:#202020;color:white;border-radius:22px;padding:20px}.hero b{font-size:14px}.bar{height:7px;background:#444;border-radius:10px;margin-top:13px;overflow:hidden}.fill{height:100%;background:var(--accent);width:0}
     .progress{margin-top:8px;font-size:12px;color:#bdbdbd}
-    .months{display:flex;flex-direction:column;gap:10px}.month{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.monthHeader{width:100%;border:0;background:#fff;padding:18px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-align:left}.monthName{font-size:19px;font-weight:800}.monthMeta{font-size:12px;color:#999;margin-left:auto;margin-right:12px}.chevron{font-size:18px;color:#888;transition:transform .2s}.month.open .chevron{transform:rotate(180deg)}.monthBody{display:none;padding:0 16px 16px}.month.open .monthBody{display:block}.day{margin:18px 0}.date{font-size:21px;font-weight:800;letter-spacing:-.6px;margin:0 0 10px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+    .legend{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin:0 0 18px}.legendTitle{font-weight:800;font-size:14px;margin-bottom:12px}.legendGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.legendItem{display:flex;align-items:center;gap:10px;font-size:12px;color:#666}.legendItem b{display:block;color:#202020;font-size:13px;margin-bottom:2px}.legendFolder{width:42px;height:31px;border-radius:5px;position:relative;flex:0 0 auto;box-shadow:inset 0 -3px 0 rgba(0,0,0,.08)}.legendFolder:before{content:"";position:absolute;left:3px;top:-6px;width:17px;height:9px;border-radius:4px 4px 0 0}.red{background:linear-gradient(#ff4545,#e52d2d)}.red:before{background:#ff4545}.orange{background:linear-gradient(#ffae2e,#ef8b00)}.orange:before{background:#ffae2e}.green{background:linear-gradient(#58cf31,#3cad1e)}.green:before{background:#58cf31}
+    .folderGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.folderCard{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;cursor:pointer;transition:.15s;min-height:150px}.folderCard:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.06)}.folderCard.active{box-shadow:0 0 0 2px rgba(32,32,32,.08)}.folderIcon{width:72px;height:52px;border-radius:8px;position:relative;margin-bottom:13px;box-shadow:inset 0 -5px 0 rgba(0,0,0,.08)}.folderIcon:before{content:"";position:absolute;left:5px;top:-10px;width:30px;height:14px;border-radius:7px 7px 0 0}.folderName{font-size:16px;font-weight:800}.folderStats{font-size:12px;color:#999;margin-top:4px}.folderStats strong{display:block;font-size:12px;margin-top:4px}.folderCard.status-red .folderStats strong{color:#e52d2d}.folderCard.status-orange .folderStats strong{color:#ef8b00}.folderCard.status-green .folderStats strong{color:#3cad1e}
+    .months{display:flex;flex-direction:column;gap:12px}.month{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;scroll-margin-top:20px}.monthHeader{width:100%;border:0;background:#fff;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-align:left}.monthName{font-size:18px;font-weight:800}.monthMeta{font-size:12px;color:#999;margin-left:auto;margin-right:12px}.monthFolderMini{width:30px;height:22px;border-radius:4px;position:relative;margin-right:10px;flex:0 0 auto}.monthFolderMini:before{content:"";position:absolute;left:2px;top:-5px;width:13px;height:7px;border-radius:3px 3px 0 0}.chevron{font-size:18px;color:#888;transition:transform .2s}.month.open .chevron{transform:rotate(180deg)}.monthBody{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}.month.open .monthBody{display:block}.day{margin:18px 0}.date{font-size:21px;font-weight:800;letter-spacing:-.6px;margin:0 0 10px}.dateLine{display:flex;align-items:center;justify-content:space-between;gap:10px}.dateMeta{font-size:12px;color:#999}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
     .task{display:flex;align-items:center;gap:13px;padding:15px 16px;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}
     .check{width:27px;height:27px;border-radius:50%;border:3px solid #c9c9c9;display:grid;place-items:center;flex:0 0 auto;cursor:pointer;background:#fff}
     .check.done{border-color:var(--accent);background:var(--accent)}.check.done:after{content:"✓";color:#fff;font-weight:900;font-size:17px;margin-top:-2px}
@@ -24,6 +26,8 @@
     .hint{font-size:12px;color:#888;line-height:1.5}.err{color:#b42318;font-size:13px;margin:8px 0}.hide{display:none!important}.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;padding:20px;z-index:4}
     .modal .box{max-width:440px}.row{display:flex;gap:8px}.row button{flex:1}
     .logout{color:#a33}.empty{padding:24px;color:#999;text-align:center}
+      @media(max-width:680px){.legendGrid{grid-template-columns:1fr}.folderGrid{grid-template-columns:repeat(2,1fr)}.folderCard{min-height:135px}.folderIcon{width:62px;height:45px}.wrap{padding-left:12px;padding-right:12px}}
+    @media(max-width:430px){.folderGrid{grid-template-columns:1fr 1fr}.folderCard{padding:13px}.folderName{font-size:14px}}
   </style>
 </head>
 <body>
@@ -45,10 +49,19 @@
     <button id="logout" class="pill logout">Keluar</button>
   </div>
   <div class="hero">
-    <b id="todayLabel">Progress</b>
+    <b id="todayLabel">Progress Keseluruhan</b>
     <div class="bar"><div id="fill" class="fill"></div></div>
     <div id="progressText" class="progress">Memuat…</div>
   </div>
+  <div class="legend">
+    <div class="legendTitle">Keterangan Warna Folder</div>
+    <div class="legendGrid">
+      <div class="legendItem"><span class="legendFolder red"></span><div><b>Merah</b>Belum ada checklist selesai</div></div>
+      <div class="legendItem"><span class="legendFolder orange"></span><div><b>Oranye</b>Sudah ada sebagian yang selesai</div></div>
+      <div class="legendItem"><span class="legendFolder green"></span><div><b>Hijau</b>Semua pekerjaan selesai</div></div>
+    </div>
+  </div>
+  <div id="folders" class="folderGrid"></div>
   <div id="list" class="months"></div>
   <button id="addDay" class="add">＋ Tambah tanggal</button>
 </div>
@@ -78,7 +91,7 @@
   const SUPABASE_URL = "https://zmiokfhuwzvedlmisocb.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
 
-  let sb, user, tasks = [];
+  let sb, user, tasks = [], realtimeChannel = null, openMonthKey = null;
   const $ = id => document.getElementById(id);
 
   function configured(){ return !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_"); }
@@ -115,7 +128,14 @@
     const {data,error}=await sb.from("tasks").select("*").order("task_date").order("created_at");
     if(error){alert(error.message);return}
     tasks=data||[]; render();
-    sb.channel("tasks-live").on("postgres_changes",{event:"*",schema:"public",table:"tasks"},()=>load()).subscribe();
+
+    if(!realtimeChannel){
+      realtimeChannel = sb.channel("tasks-live")
+        .on("postgres_changes",{event:"*",schema:"public",table:"tasks"},async ()=>{
+          const {data,error}=await sb.from("tasks").select("*").order("task_date").order("created_at");
+          if(!error){ tasks=data||[]; render(); }
+        }).subscribe();
+    }
   }
 
   function render(){
@@ -125,28 +145,61 @@
       (months[monthKey] ??= []).push(t);
     });
 
-    let done=tasks.filter(t=>t.completed).length, total=tasks.length, pct=total?Math.round(done/total*100):0;
+    const done=tasks.filter(t=>t.completed).length, total=tasks.length, pct=total?Math.round(done/total*100):0;
     $("fill").style.width=pct+"%";
     $("progressText").textContent=`${done} dari ${total} pekerjaan selesai · ${pct}%`;
+
+    const folderBox=$("folders");
+    folderBox.innerHTML="";
+
+    const monthKeys=Object.keys(months).sort();
+    monthKeys.forEach(monthKey=>{
+      const items=months[monthKey];
+      const monthDone=items.filter(t=>t.completed).length;
+      const status=monthDone===0?"red":monthDone===items.length?"green":"orange";
+      const monthDate=new Date(monthKey+"-01T00:00:00");
+      const monthName=monthDate.toLocaleDateString("id-ID",{month:"long",year:"numeric"});
+
+      const folder=document.createElement("button");
+      folder.type="button";
+      folder.className=`folderCard status-${status}${openMonthKey===monthKey?" active":""}`;
+      folder.innerHTML=`
+        <div class="folderIcon ${status}"></div>
+        <div class="folderName">${monthName}</div>
+        <div class="folderStats">${items.length} pekerjaan<strong>${monthDone}/${items.length} selesai</strong></div>`;
+      folder.onclick=()=>{
+        openMonthKey = openMonthKey===monthKey ? null : monthKey;
+        render();
+        if(openMonthKey){
+          requestAnimationFrame(()=>{
+            const el=document.getElementById("month-"+monthKey);
+            if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+          });
+        }
+      };
+      folderBox.appendChild(folder);
+    });
 
     const list=$("list");
     list.innerHTML="";
 
-    Object.keys(months).sort().forEach(monthKey=>{
+    monthKeys.forEach(monthKey=>{
       const items=months[monthKey].sort((a,b)=>{
         const d=(a.task_date+"").localeCompare(b.task_date);
         if(d!==0) return d;
         return (a.created_at||"").localeCompare(b.created_at||"");
       });
-
+      const monthDone=items.filter(t=>t.completed).length;
+      const status=monthDone===0?"red":monthDone===items.length?"green":"orange";
       const monthDate=new Date(monthKey+"-01T00:00:00");
       const monthName=monthDate.toLocaleDateString("id-ID",{month:"long",year:"numeric"});
-      const monthDone=items.filter(t=>t.completed).length;
 
       const month=document.createElement("section");
-      month.className="month";
+      month.id="month-"+monthKey;
+      month.className=`month ${openMonthKey===monthKey?"open":""}`;
       month.innerHTML=`
         <button class="monthHeader" type="button">
+          <span class="monthFolderMini ${status}"></span>
           <span class="monthName">${monthName}</span>
           <span class="monthMeta">${monthDone}/${items.length} selesai</span>
           <span class="chevron">⌄</span>
@@ -154,7 +207,16 @@
         <div class="monthBody"></div>`;
 
       const body=month.querySelector(".monthBody");
-      month.querySelector(".monthHeader").onclick=()=>month.classList.toggle("open");
+      month.querySelector(".monthHeader").onclick=()=>{
+        openMonthKey = openMonthKey===monthKey ? null : monthKey;
+        render();
+        if(openMonthKey){
+          requestAnimationFrame(()=>{
+            const el=document.getElementById("month-"+monthKey);
+            if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+          });
+        }
+      };
 
       const days={};
       items.forEach(t=>{
@@ -171,10 +233,11 @@
         const labelSuffix=dayItems[0].batch_label ? "-"+dayItems[0].batch_label : "";
         const d=new Date(date+"T00:00:00");
         const label=d.toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"}).replaceAll("/",".")+labelSuffix;
+        const dayDone=dayItems.filter(t=>t.completed).length;
 
         const day=document.createElement("section");
         day.className="day";
-        day.innerHTML=`<h2 class="date">${label}</h2><div class="card"></div>`;
+        day.innerHTML=`<div class="dateLine"><h2 class="date">${label}</h2><div class="dateMeta">${dayDone}/${dayItems.length} selesai</div></div><div class="card"></div>`;
         const card=day.querySelector(".card");
 
         dayItems.forEach(t=>{
@@ -192,7 +255,10 @@
       list.appendChild(month);
     });
 
-    if(!tasks.length) list.innerHTML='<div class="empty">Belum ada pekerjaan.</div>';
+    if(!tasks.length){
+      folderBox.innerHTML='<div class="empty" style="grid-column:1/-1">Belum ada bulan / pekerjaan.</div>';
+      list.innerHTML="";
+    }
   }
 
   let editingTask = null;
