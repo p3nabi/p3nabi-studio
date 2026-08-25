@@ -57,6 +57,55 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 @media(max-width:850px){#projectView.compactProjectView{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
 @media(max-width:560px){#projectView.compactProjectView{grid-template-columns:1fr;gap:12px}}
 
+
+/* FINAL FORCE: 4-COLUMN MINI CARDS */
+#projectView.compactProjectView{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:18px !important;
+  align-items:start !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+#projectView.compactProjectView > .folderViewHead{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  margin-bottom:2px !important;
+}
+#projectView.compactProjectView > .day{
+  grid-column:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  border:1px solid #292735 !important;
+  border-radius:14px !important;
+  overflow:hidden !important;
+  background:linear-gradient(145deg,#171720,#111118) !important;
+}
+#projectView.compactProjectView .dateLine{
+  min-height:38px !important;
+  box-sizing:border-box !important;
+  padding:9px 11px !important;
+  margin:0 !important;
+  border-bottom:1px solid #292735 !important;
+  background:#14131b !important;
+}
+#projectView.compactProjectView .date{font-size:12px !important;margin:0 !important;line-height:1.2 !important}
+#projectView.compactProjectView .dateMeta{font-size:9px !important}
+#projectView.compactProjectView .taskCard{border:0 !important;border-radius:0 !important;background:transparent !important}
+#projectView.compactProjectView .task{min-height:40px !important;padding:6px 8px !important;gap:7px !important;box-sizing:border-box !important;border-bottom:1px solid #292833 !important}
+#projectView.compactProjectView .task:last-child{border-bottom:0 !important}
+#projectView.compactProjectView .check{width:18px !important;height:18px !important;flex:0 0 18px !important}
+#projectView.compactProjectView .check.done:after{font-size:11px !important}
+#projectView.compactProjectView .title{font-size:10px !important;line-height:1.15 !important;min-width:0 !important}
+#projectView.compactProjectView .taskSub{font-size:8px !important;line-height:1.1 !important;margin-top:2px !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+#projectView.compactProjectView .actions{margin-left:auto !important;gap:0 !important;flex:0 0 auto !important}
+#projectView.compactProjectView .actionBtn{padding:3px 4px !important;font-size:10px !important}
+@media(max-width:1200px){#projectView.compactProjectView{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:16px !important}}
+@media(max-width:900px){#projectView.compactProjectView{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px !important}}
+@media(max-width:600px){#projectView.compactProjectView{grid-template-columns:1fr !important;gap:12px !important}}
 </style>
 </head>
 <body>
