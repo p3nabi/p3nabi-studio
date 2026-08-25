@@ -324,7 +324,25 @@ function closeEdit(){$("editModal").classList.add("hide");editingTask=null}
 $("editCancel").onclick=closeEdit;$("editModal").onclick=e=>{if(e.target.id==="editModal")closeEdit()}
 $("editSave").onclick=async()=>{if(!editingTask)return;const title=$("editTitle").value.trim(),project=$("editProject").value.trim(),pic=$("editPic").value.trim();if(!title){$("editErr").textContent="Nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").update({title,project_name:project||null,pic:pic||null}).eq("id",editingTask.id);if(error)$("editErr").textContent=error.message;else{closeEdit();await loadTasks()}}
 async function deleteTask(t){if(!confirm(`Hapus pekerjaan "${t.title}"?`))return;const {error}=await sb.from("tasks").delete().eq("id",t.id);if(error)alert(error.message);else await loadTasks()}
-async function toggle(t){const {error}=await sb.from("tasks").update({completed:!t.completed,completed_by:!t.completed?user.id:null,completed_at:!t.completed?new Date().toISOString():null}).eq("id",t.id);if(error)alert(error.message);else await loadTasks()}
+async function toggle(t){
+  const next=!Boolean(t.completed);
+  const {error}=await sb.from("tasks").update({
+    completed:next,
+    completed_by:next?user.id:null,
+    completed_at:next?new Date().toISOString():null
+  }).eq("id",t.id);
+  if(error){
+    alert("Checklist gagal disimpan: "+error.message);
+    return;
+  }
+  // Update the local task immediately, then redraw the currently opened month.
+  // This keeps the month open instead of returning to the folder list.
+  t.completed=next;
+  t.completed_by=next?user.id:null;
+  t.completed_at=next?new Date().toISOString():null;
+  renderAll();
+  if(currentProject) openProject(currentProject);
+}
 $("addTaskBtn").onclick=()=>openTaskModal(new Date().toISOString().slice(0,10));
 function openTaskModal(date){$("newDate").value=date;$("newLabel").value="";$("newTitle").value="";$("newProject").value=currentProject&&currentProject!=="Belum ditentukan"?currentProject:"";$("newPic").value=getProfile()?.username||"";$("taskErr").textContent="";$("taskModal").classList.remove("hide")}
 function closeTaskModal(){$("taskModal").classList.add("hide")}
