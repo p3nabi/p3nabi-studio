@@ -155,6 +155,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 .jobMenu button.danger{color:#ff7d84}
 .jobMenu button.danger:hover{background:#2b171b}
 .jobNameHint{font-size:10px;color:#77737f;margin-top:4px}
+.folderStats strong{display:block;margin-top:3px}.folderCard.status-red .folderIcon{filter:none}
 </style>
 </head>
 <body>
@@ -206,7 +207,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 
     <section id="page-folders" class="page">
       <div id="folderHome">
-        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary adminOnly" id="addTaskBtn">＋ Tambah pekerjaan</button></div>
+        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Folder bulan untuk mengelola kerjaan dan output tim.</p></div><button class="primary adminOnly" id="addFolderBtn">＋ Tambah Folder</button></div>
       <div class="legend">
         <div class="legendTitle">Keterangan warna folder</div>
         <div class="legendItem"><span class="legendFolder red"></span><div><b>Merah</b> Belum selesai</div></div>
@@ -269,11 +270,19 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 <label>PIC</label><select id="editPic" class="picSelect"></select>
 <div id="editErr" class="err"></div><div class="row"><button id="editCancel" class="pill">Batal</button><button id="editSave" class="primary">Simpan</button></div></div></div>
 
+<div id="folderModal" class="modal hide"><div class="box">
+<h2 style="margin:0 0 8px">Tambah Folder</h2>
+<div class="muted" style="font-size:11px;margin-bottom:16px">Membuat folder bulan untuk manajemen. Folder ini tidak mengubah database pekerjaan.</div>
+<label>Bulan</label><input id="folderMonth" type="month">
+<div id="folderErr" class="err"></div>
+<div class="row"><button id="folderCancel" class="pill">Batal</button><button id="folderSave" class="primary">Buat Folder</button></div>
+</div></div>
+
 <div id="taskModal" class="modal hide"><div class="box taskModalBox">
   <div class="taskModalHead">
     <div>
       <h2 style="margin:0">Tambah pekerjaan</h2>
-      <div class="muted" style="font-size:11px;margin-top:4px">Bisa menambahkan beberapa kategori pekerjaan sekaligus dalam satu kerjaan dan tanggal.</div>
+      <div class="muted" style="font-size:11px;margin-top:4px">Satu kerjaan dapat memiliki beberapa output. Semua output akan masuk ke mini card kerjaan ini.</div>
     </div>
     <button id="taskCancelTop" class="actionBtn" type="button">×</button>
   </div>
@@ -284,18 +293,18 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
       <input id="newDate" type="date">
     </div>
     <div>
-      <label>Nama kerjaan <span class="muted">(disarankan)</span></label>
+      <label>Nama kerjaan</label>
       <input id="newLabel" placeholder="Contoh: MV Ecko Show">
-      <div class="jobNameHint">Nama ini menjadi judul mini card.</div>
+      <div class="jobNameHint">Judul ini akan tampil di bagian atas mini card.</div>
     </div>
   </div>
 
   <div class="taskCategoryHead">
     <div>
-      <b>Kategori pekerjaan</b>
-      <span>Tambah beberapa kategori untuk kerjaan yang sama.</span>
+      <b>Output</b>
+      <span>Tambahkan output yang harus dikerjakan dalam kerjaan ini.</span>
     </div>
-    <button id="addTaskRow" type="button" class="secondary smallBtn">＋ Tambah kategori</button>
+    <button id="addTaskRow" type="button" class="secondary smallBtn">＋ Tambah output</button>
   </div>
 
   <div id="taskRows" class="taskRows"></div>
@@ -303,16 +312,17 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 
   <div class="row">
     <button id="taskCancel" class="pill">Batal</button>
-    <button id="taskSave" class="primary">Tambah pekerjaan</button>
+    <button id="taskSave" class="primary">Buat Kerjaan</button>
   </div>
 </div></div>
 
 <div id="jobDateModal" class="modal hide"><div class="box">
-<h2 style="margin:0 0 7px">Edit tanggal kerjaan</h2>
-<div class="muted" style="font-size:11px;margin-bottom:14px">Semua kategori di mini card ini akan dipindahkan ke tanggal baru.</div>
-<label>Tanggal baru</label><input id="jobDateInput" type="date">
+<h2 style="margin:0 0 8px">Edit Kerjaan</h2>
+<div class="muted" style="font-size:11px;margin-bottom:14px">Ubah nama kerjaan atau tanggal. Semua output di mini card ikut diperbarui.</div>
+<label>Nama kerjaan</label><input id="jobNameInput" type="text">
+<label style="margin-top:10px">Tanggal</label><input id="jobDateInput" type="date">
 <div id="jobDateErr" class="err"></div>
-<div class="row"><button id="jobDateCancel" class="pill">Batal</button><button id="jobDateSave" class="primary">Simpan tanggal</button></div>
+<div class="row"><button id="jobDateCancel" class="pill">Batal</button><button id="jobDateSave" class="primary">Simpan</button></div>
 </div></div>
 
 <div id="agendaModal" class="modal hide"><div class="box"><h2 style="margin:0 0 16px">Tambah agenda</h2>
@@ -336,7 +346,7 @@ const initials=s=>(s||"P3").split(/[\s@]+/).filter(Boolean).slice(0,2).map(x=>x[
 const yearOf=t=>String(t.task_date).slice(0,4);
 const projectName=t=>(t.project_name||"").trim()||"Belum ditentukan";
 const monthKey=t=>String(t.task_date).slice(0,7);
-const statusFor=items=>{const d=items.filter(t=>t.completed).length;return d===0?"red":d===items.length?"green":"orange"};
+const statusFor=items=>{if(!items.length)return "red";const d=items.filter(t=>t.completed).length;return d===0?"red":d===items.length?"green":"orange"};
 const monthLabel=k=>new Date(k+"-01T00:00:00").toLocaleDateString("id-ID",{month:"long",year:"numeric"});
 function avatarHtml(p,size=""){return p?.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:esc(initials(p?.username||p?.email||"P3"))}
 function getProfile(id=user?.id){return profiles.find(p=>p.id===id)}
@@ -434,15 +444,21 @@ function updateTaskFilterUI(){
     btn.classList.toggle("active",btn.dataset.taskFilter===taskFilter);
   });
 }
+function getManagedFolders(){
+ try{return JSON.parse(localStorage.getItem("p3nabi_managed_folders")||"[]").filter(x=>/^\d{4}-\d{2}$/.test(x));}
+ catch{return []}
+}
+function saveManagedFolders(list){localStorage.setItem("p3nabi_managed_folders",JSON.stringify([...new Set(list)].sort()));}
 function folderData(){
  const m={};
  visibleTasks().forEach(t=>{const k=monthKey(t);(m[k]??=[]).push(t)});
+ getManagedFolders().forEach(k=>{if(!m[k])m[k]=[]});
  return m;
 }
 function folderCard(month,items){
  const status=statusFor(items),done=items.filter(t=>t.completed).length;
  const el=document.createElement("button");el.className=`folderCard status-${status}`;el.type="button";
- el.innerHTML=`<span class="folderDots">⋮</span><div class="folderIcon ${status}"></div><div class="folderName">${esc(monthLabel(month))}</div><div class="folderStats">${items.length} pekerjaan<strong>${done}/${items.length} selesai</strong></div>`;
+ el.innerHTML=`<span class="folderDots">⋮</span><div class="folderIcon ${status}"></div><div class="folderName">${esc(monthLabel(month))}</div><div class="folderStats">${items.length} pekerjaan<strong>${items.length?done+"/"+items.length+" selesai":"Folder kosong"}</strong></div>`;
  el.onclick=()=>openProject(month);return el;
 }
 function renderFolders(){
@@ -489,6 +505,7 @@ let editingJobGroup=null;
 function openJobDateEdit(items){
   if(!canAdmin()||!items?.length)return;
   editingJobGroup=items;
+  $("jobNameInput").value=jobNameOf(items[0]);
   $("jobDateInput").value=items[0].task_date;
   $("jobDateErr").textContent="";
   $("jobDateModal").classList.remove("hide");
@@ -498,9 +515,12 @@ $("jobDateCancel").onclick=closeJobDateEdit;
 $("jobDateModal").onclick=e=>{if(e.target.id==="jobDateModal")closeJobDateEdit()};
 $("jobDateSave").onclick=async()=>{
   if(!canAdmin()||!editingJobGroup)return;
-  const date=$("jobDateInput").value;if(!date){$("jobDateErr").textContent="Tanggal wajib diisi.";return;}
+  const date=$("jobDateInput").value;
+  const name=$("jobNameInput").value.trim();
+  if(!date){$("jobDateErr").textContent="Tanggal wajib diisi.";return;}
+  if(!name){$("jobDateErr").textContent="Nama kerjaan wajib diisi.";return;}
   const ids=editingJobGroup.map(t=>t.id);
-  const {error}=await sb.from("tasks").update({task_date:date}).in("id",ids);
+  const {error}=await sb.from("tasks").update({task_date:date,batch_label:name}).in("id",ids);
   if(error){$("jobDateErr").textContent=error.message;return;}
   closeJobDateEdit();await loadTasks();
   if(currentProject)openProject(currentProject);
@@ -529,7 +549,7 @@ function openProject(month){
    const card=sec.querySelector(".taskCard");
    if(canAdmin()){
      const menuBtn=sec.querySelector(".jobMenuBtn");
-     menuBtn.onclick=e=>{e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const m=document.createElement("div");m.className="jobMenu";m.innerHTML='<button data-act="dup">Duplicate</button><button data-act="date">Edit (tanggal)</button><button data-act="del" class="danger">Hapus</button>';sec.appendChild(m);m.querySelector('[data-act="dup"]').onclick=()=>{m.remove();duplicateJob(di)};m.querySelector('[data-act="date"]').onclick=()=>{m.remove();openJobDateEdit(di)};m.querySelector('[data-act="del"]').onclick=()=>{m.remove();deleteJobGroup(di)};};
+     menuBtn.onclick=e=>{e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const m=document.createElement("div");m.className="jobMenu";m.innerHTML='<button data-act="dup">Duplicate</button><button data-act="date">Edit nama & tanggal</button><button data-act="del" class="danger">Hapus</button>';sec.appendChild(m);m.querySelector('[data-act="dup"]').onclick=()=>{m.remove();duplicateJob(di)};m.querySelector('[data-act="date"]').onclick=()=>{m.remove();openJobDateEdit(di)};m.querySelector('[data-act="del"]').onclick=()=>{m.remove();deleteJobGroup(di)};};
    }
    di.forEach(t=>{
      const row=document.createElement("div");row.className="task";row.innerHTML=`<button class="check ${t.completed?"done":""}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}${t.project_name?" · "+esc(t.project_name):""}</div></div><div class="actions">${canAdmin()?'<button class="actionBtn editBtn">✎</button><button class="actionBtn deleteBtn">×</button>':""}</div>`;
@@ -662,7 +682,10 @@ async function toggle(t){
   renderAll();
   if(currentProject) openProject(currentProject);
 }
-$("addTaskBtn").onclick=()=>{if(canAdmin())openTaskModal(new Date().toISOString().slice(0,10))};
+$("addFolderBtn").onclick=()=>{if(!canAdmin())return;$("folderMonth").value=new Date().toISOString().slice(0,7);$("folderErr").textContent="";$("folderModal").classList.remove("hide")};
+$("folderCancel").onclick=()=>$("folderModal").classList.add("hide");
+$("folderModal").onclick=e=>{if(e.target.id==="folderModal")$("folderModal").classList.add("hide")};
+$("folderSave").onclick=()=>{if(!canAdmin())return;const month=$("folderMonth").value;if(!month){$("folderErr").textContent="Pilih bulan terlebih dahulu.";return}const folders=getManagedFolders();if(folders.includes(month)){ $("folderErr").textContent="Folder bulan tersebut sudah ada.";return }saveManagedFolders([...folders,month]);$("folderModal").classList.add("hide");renderFolders()};
 
 function picOptionsHtml(selected=""){
   const names=[...new Set(profiles.map(p=>(p.username||"").trim()).filter(Boolean))]
@@ -708,9 +731,7 @@ function openTaskModal(date,batchLabel=""){
   $("newDate").value=date||new Date().toISOString().slice(0,10);
   $("newLabel").value=batchLabel||"";
   $("taskRows").innerHTML="";
-  addTaskInputRow({
-    project:currentProject&&currentProject!=="Belum ditentukan"?currentProject:""
-  });
+  addTaskInputRow({project:""});
   $("taskErr").textContent="";
   $("taskModal").classList.remove("hide");
   setTimeout(()=>$("taskRows")?.querySelector(".taskRowTitle")?.focus(),30);
@@ -720,9 +741,7 @@ function closeTaskModal(){$("taskModal").classList.add("hide")}
 $("taskCancel").onclick=closeTaskModal;
 $("taskCancelTop").onclick=closeTaskModal;
 $("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
-$("addTaskRow").onclick=()=>addTaskInputRow({
-  project:currentProject&&currentProject!=="Belum ditentukan"?currentProject:""
-});
+$("addTaskRow").onclick=()=>addTaskInputRow({project:""});
 
 $("taskSave").onclick=async()=>{
   if(!canAdmin())return;
@@ -743,7 +762,7 @@ $("taskSave").onclick=async()=>{
   })).filter(x=>x.title);
 
   if(!entries.length){
-    $("taskErr").textContent="Minimal satu kategori pekerjaan harus diisi.";
+    $("taskErr").textContent="Minimal satu output harus diisi.";
     return;
   }
 
