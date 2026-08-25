@@ -111,26 +111,9 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
   border-bottom:1px solid #292735;
   background:#14131b;
 }
-#projectView.compactProjectView .miniCardMenu{
-  position:absolute;
-  top:8px;
-  right:8px;
-  width:24px;
-  height:24px;
-  border:0;
-  background:transparent;
-  color:#8f8b98;
-  border-radius:7px;
-  font-size:16px;
-  line-height:24px;
-  padding:0;
-  z-index:2;
-}
-#projectView.compactProjectView .miniCardMenu:hover{
-  background:#272531;
-  color:#fff;
-}
 #projectView.compactProjectView .miniCardTitle{
+  margin:0;
+  padding-right:18px;
   font-size:13px;
   line-height:1.15;
   font-weight:850;
@@ -197,7 +180,30 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
   padding:3px 4px !important;
   font-size:10px !important;
 }
-#projectView.compactProjectView .miniCardEmpty{
+#projectView.compactProjectView #projectView.compactProjectView .miniCard{position:relative}
+#projectView.compactProjectView .miniCardHead{position:relative}
+#projectView.compactProjectView .jobMenuBtn{
+  position:absolute;right:9px;top:8px;width:28px;height:28px;
+  border:0;background:transparent;color:#8f8b98;border-radius:8px;
+  font-size:18px;line-height:28px;padding:0;z-index:5;
+}
+#projectView.compactProjectView .jobMenuBtn:hover{background:#272531;color:#fff}
+.jobMenu{
+  position:absolute;right:9px;top:38px;z-index:20;min-width:175px;
+  background:#1a1922;border:1px solid #373341;border-radius:11px;
+  padding:5px;box-shadow:0 18px 45px rgba(0,0,0,.45);
+}
+.jobMenu button{
+  display:block;width:100%;border:0;background:transparent;color:#e8e5ed;
+  text-align:left;padding:9px 10px;border-radius:7px;font-size:12px;
+}
+.jobMenu button:hover{background:#282531}
+.jobMenu button.danger{color:#ff777d}
+#projectView.compactProjectView .miniCardTitle{
+  padding-right:32px;
+}
+.priorityBadge{display:inline-flex;align-items:center;gap:6px;border:1px solid #4a3a62;background:#1c1626;color:#cfa9ff;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;margin-top:8px}
+.miniCardEmpty{
   grid-column:1 / -1;
   padding:30px;
   text-align:center;
@@ -308,7 +314,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 
     <section id="page-folders" class="page">
       <div id="folderHome">
-        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary adminOnly" id="addTaskBtn">＋ Tambah pekerjaan</button></div>
+        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary adminOnly" id="addTaskBtn">＋ Tambah Folder</button></div>
       <div class="legend">
         <div class="legendTitle">Keterangan warna folder</div>
         <div class="legendItem"><span class="legendFolder red"></span><div><b>Merah</b> Belum selesai</div></div>
@@ -365,15 +371,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
   </div></main>
 </div>
 
-<div id="projectTitleModal" class="modal hide"><div class="box">
-  <h2 style="margin:0 0 16px">Edit judul kerjaan</h2>
-  <label>Judul kerjaan</label>
-  <input id="projectTitleInput" placeholder="Contoh: Perform ECKO SHOW">
-  <div id="projectTitleErr" class="err"></div>
-  <div class="row">
-    <button id="projectTitleCancel" class="pill">Batal</button>
-    <button id="projectTitleSave" class="primary">Simpan</button>
-  </div>
+<div id="jobEditModal" class="modal hide"><div class="box">
+<h2 style="margin:0 0 16px">Edit kerjaan</h2>
+<label>Nama kerjaan</label><input id="jobNameInput" placeholder="Contoh: Perform ECKO SHOW">
+<label>Tanggal</label><input id="jobDateInput" type="date">
+<div id="jobEditErr" class="err"></div>
+<div class="row"><button id="jobEditCancel" class="pill">Batal</button><button id="jobEditSave" class="primary">Simpan</button></div>
 </div></div>
 
 <div id="editModal" class="modal hide"><div class="box"><h2 style="margin:0 0 16px">Edit pekerjaan</h2>
@@ -384,9 +387,9 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 
 <div id="taskModal" class="modal hide"><div class="box"><h2 style="margin:0 0 16px">Tambah pekerjaan</h2>
 <label>Tanggal</label><input id="newDate" type="date">
-<label>Penanda tanggal (opsional)</label><input id="newLabel" placeholder="Contoh: 2">
+<label>Nama kerjaan</label><input id="newLabel" placeholder="Contoh: Perform ECKO SHOW">
 <label>Nama pekerjaan</label><input id="newTitle" placeholder="Contoh: Upload TikTok">
-<label>Nama project</label><input id="newProject" placeholder="Contoh: MV Ecko Show">
+<label>Project (opsional)</label><input id="newProject" placeholder="Contoh: MV Ecko Show">
 <label>PIC</label><select id="newPic" class="picSelect"></select>
 <div id="taskErr" class="err"></div><div class="row"><button id="taskCancel" class="pill">Batal</button><button id="taskSave" class="primary">Tambah</button></div></div></div>
 
@@ -538,6 +541,107 @@ document.querySelectorAll(".taskTab").forEach(btn=>{
   };
 });
 
+function jobNameOf(t){
+  // IMPORTANT: batch_label is the existing "judul kerjaan" field.
+  // project_name is kept as project metadata and is NOT used to rename the card.
+  return (t.batch_label||t.project_name||"Kerjaan").trim() || "Kerjaan";
+}
+function formatDate(d){return d?d.split("-").reverse().join("."):""}
+
+function groupJobItems(items){
+  const groups={};
+  items.forEach(t=>{
+    const name=jobNameOf(t);
+    const key=t.task_date+"|"+name;
+    (groups[key]??=[]).push(t);
+  });
+  return groups;
+}
+
+async function duplicateJob(items){
+  if(!canAdmin()||!items?.length)return;
+  const date=prompt("Tanggal baru (YYYY-MM-DD)",items[0].task_date);
+  if(!date)return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){
+    alert("Format tanggal harus YYYY-MM-DD.");
+    return;
+  }
+
+  const payload=items.map(t=>({
+    task_date:date,
+    batch_label:t.batch_label||null,
+    title:t.title,
+    project_name:t.project_name||null,
+    pic:t.pic||null,
+    created_by:user.id,
+    completed:false,
+    completed_by:null,
+    completed_at:null
+  }));
+
+  const {error}=await sb.from("tasks").insert(payload);
+  if(error){alert(error.message);return}
+
+  await loadTasks();
+  if(currentProject)openProject(currentProject);
+}
+
+let editingJobGroup=null;
+
+function openJobEdit(items){
+  if(!canAdmin()||!items?.length)return;
+  editingJobGroup=items;
+  $("jobNameInput").value=jobNameOf(items[0]);
+  $("jobDateInput").value=items[0].task_date;
+  $("jobEditErr").textContent="";
+  $("jobEditModal").classList.remove("hide");
+  $("jobNameInput").focus();
+}
+function closeJobEdit(){
+  editingJobGroup=null;
+  $("jobEditModal").classList.add("hide");
+}
+$("jobEditCancel").onclick=closeJobEdit;
+$("jobEditModal").onclick=e=>{
+  if(e.target.id==="jobEditModal")closeJobEdit();
+};
+
+$("jobEditSave").onclick=async()=>{
+  if(!canAdmin()||!editingJobGroup)return;
+
+  const name=$("jobNameInput").value.trim();
+  const date=$("jobDateInput").value;
+
+  if(!name){$("jobEditErr").textContent="Nama kerjaan wajib diisi.";return}
+  if(!date){$("jobEditErr").textContent="Tanggal wajib diisi.";return}
+
+  const ids=editingJobGroup.map(t=>t.id);
+
+  // Preserve the existing schema and checklist fields.
+  // Only the job title field (batch_label) and date are changed here.
+  const {error}=await sb.from("tasks")
+    .update({batch_label:name,task_date:date})
+    .in("id",ids);
+
+  if(error){$("jobEditErr").textContent=error.message;return}
+
+  closeJobEdit();
+  await loadTasks();
+  if(currentProject)openProject(currentProject);
+};
+
+async function deleteJobGroup(items){
+  if(!canAdmin()||!items?.length)return;
+  const name=jobNameOf(items[0]);
+  if(!confirm(`Hapus kerjaan "${name}" beserta ${items.length} output?`))return;
+
+  const {error}=await sb.from("tasks").delete().in("id",items.map(t=>t.id));
+  if(error){alert(error.message);return}
+
+  await loadTasks();
+  if(currentProject)openProject(currentProject);
+}
+
 function openProject(month){
   currentProject=month;
   $("folderHome").classList.add("hide");
@@ -557,7 +661,7 @@ function openProject(month){
     <div class="folderViewHead">
       <div>
         <div class="eyebrow">KERJAAN BULANAN</div>
-        <div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div>
+        <div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div><span class="priorityBadge">Prioritas 1 — Kerjaan</span>
         <div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai · Cari & filter di bawah</div>
       </div>
       <div style="display:flex;gap:8px">
@@ -580,49 +684,28 @@ function openProject(month){
   `;
 
   $("backProjects").onclick=()=>closeProject();
-  if(canAdmin()) $("monthAddTask").onclick=()=>openTaskModal(new Date().toISOString().slice(0,10));
+  if(canAdmin()) $("monthAddTask").onclick=()=>openTaskModal(`${month}-01`);
 
-  const days={};
-  items.forEach(t=>{
-    const k=t.task_date+"|"+(t.batch_label||"");
-    (days[k]??=[]).push(t);
-  });
+  const groups=groupJobItems(items);
+  const groupEntries=Object.entries(groups).sort((a,b)=>a[0].localeCompare(b[0]));
 
-  const dayEntries=Object.entries(days).sort((a,b)=>a[0].localeCompare(b[0]));
-
-  // The title shown on each mini-card is the stored project_name.
-  // It is NOT rebuilt from task titles, so existing renamed titles remain untouched.
-  function getCardProjectName(di){
-    const counts={};
-    di.forEach(t=>{
-      const n=(t.project_name||"").trim();
-      if(n) counts[n]=(counts[n]||0)+1;
-    });
-    const names=Object.keys(counts);
-    if(!names.length) return "Belum ditentukan";
-    return names.sort((a,b)=>counts[b]-counts[a])[0];
-  }
-
-  function cardMatches(di, search, filter){
+  function groupMatches(di,search,filter){
     const q=(search||"").trim().toLowerCase();
-    const projectTitle=getCardProjectName(di).toLowerCase();
+    const name=jobNameOf(di[0]).toLowerCase();
     const outputs=di.map(t=>`${t.title||""} ${t.pic||""}`).join(" ").toLowerCase();
-    const text=`${projectTitle} ${outputs}`;
-
-    if(q && !text.includes(q)) return false;
+    if(q && !`${name} ${outputs}`.includes(q))return false;
 
     const total=di.length;
     const completed=di.filter(t=>t.completed).length;
 
-    if(filter==="pending" && completed!==0) return false;
-    if(filter==="partial" && (completed===0 || completed===total)) return false;
-    if(filter==="done" && completed!==total) return false;
+    if(filter==="pending" && completed!==0)return false;
+    if(filter==="partial" && (completed===0||completed===total))return false;
+    if(filter==="done" && completed!==total)return false;
 
     if(filter==="mine"){
       const me=(getProfile()?.username||"").trim();
-      if(!me || !di.some(t=>(t.pic||"").trim()===me)) return false;
+      if(!me||!di.some(t=>(t.pic||"").trim()===me))return false;
     }
-
     return true;
   }
 
@@ -633,24 +716,24 @@ function openProject(month){
     const filter=$("projectFilter")?.value||"all";
     let shown=0;
 
-    dayEntries.forEach(([k,di])=>{
-      if(!cardMatches(di,search,filter)) return;
+    groupEntries.forEach(([key,di])=>{
+      if(!groupMatches(di,search,filter))return;
 
       shown++;
       const d=di[0];
       const dd=di.filter(x=>x.completed).length;
       const pct=di.length?Math.round(dd/di.length*100):0;
-      const cardTitle=getCardProjectName(di);
+      const name=jobNameOf(d);
 
       const sec=document.createElement("section");
       sec.className="miniCard";
 
       sec.innerHTML=`
-        <button class="miniCardMenu" title="Ubah judul kerjaan" aria-label="Ubah judul kerjaan">⋮</button>
         <div class="miniCardHead">
-          <h3 class="miniCardTitle">${esc(cardTitle)}</h3>
+          <h3 class="miniCardTitle">${esc(name)}</h3>
+          ${canAdmin()?'<button type="button" class="jobMenuBtn" aria-label="Menu kerjaan" title="Menu kerjaan">⋮</button>':""}
           <div class="miniCardMeta">
-            <span>${d.task_date.split("-").reverse().join(".")}${d.batch_label?"-"+esc(d.batch_label):""}</span>
+            <span>${formatDate(d.task_date)}</span>
             <span>${dd}/${di.length} selesai</span>
           </div>
           <div class="miniProgress">
@@ -662,13 +745,42 @@ function openProject(month){
 
       const card=sec.querySelector(".taskCard");
 
-      // ⋮ edits ONLY the project title for this mini-card.
-      // Output titles (t.title), PIC, dates and checklist states are untouched.
-      sec.querySelector(".miniCardMenu").onclick=(e)=>{
-        e.preventDefault();
-        e.stopPropagation();
-        openProjectTitleEdit(di);
-      };
+      if(canAdmin()){
+        const menuBtn=sec.querySelector(".jobMenuBtn");
+
+        menuBtn.onclick=e=>{
+          e.preventDefault();
+          e.stopPropagation();
+
+          document.querySelectorAll(".jobMenu").forEach(x=>x.remove());
+
+          const menu=document.createElement("div");
+          menu.className="jobMenu";
+          menu.innerHTML=`
+            <button type="button" data-act="dup">Duplicate</button>
+            <button type="button" data-act="edit">Edit nama & tanggal</button>
+            <button type="button" data-act="del" class="danger">Hapus</button>
+          `;
+
+          sec.appendChild(menu);
+
+          menu.querySelector('[data-act="dup"]').onclick=e=>{
+            e.stopPropagation();
+            menu.remove();
+            duplicateJob(di);
+          };
+          menu.querySelector('[data-act="edit"]').onclick=e=>{
+            e.stopPropagation();
+            menu.remove();
+            openJobEdit(di);
+          };
+          menu.querySelector('[data-act="del"]').onclick=e=>{
+            e.stopPropagation();
+            menu.remove();
+            deleteJobGroup(di);
+          };
+        };
+      }
 
       di.forEach(t=>{
         const row=document.createElement("div");
@@ -795,37 +907,6 @@ $("saveProfile").onclick=async()=>{const username=$("profileUsername").value.tri
 $("avatarFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>3*1024*1024){$("profileErr").textContent="Foto maksimal 3 MB.";return}const ext=file.name.split(".").pop()?.toLowerCase()||"jpg",path=`${user.id}/${Date.now()}.${ext}`;const up=await sb.storage.from("avatars").upload(path,file,{upsert:true,contentType:file.type});if(up.error){$("profileErr").textContent=up.error.message;return}const {data}=sb.storage.from("avatars").getPublicUrl(path);const {error}=await sb.from("profiles").update({avatar_url:data.publicUrl,updated_at:new Date().toISOString()}).eq("id",user.id);if(error)$("profileErr").textContent=error.message;else{await loadProfiles();renderSettings()}}
 $("savePassword").onclick=async()=>{const pass=$("newPassword").value;if(pass.length<6){$("passwordErr").textContent="Password minimal 6 karakter.";return}const {error}=await sb.auth.updateUser({password:pass});if(error)$("passwordErr").textContent=error.message;else{$("passwordErr").textContent="Password berhasil diubah.";$("newPassword").value=""}}
 
-let editingProjectTasks=null;
-
-function openProjectTitleEdit(di){
-  if(!canAdmin())return;
-  editingProjectTasks=di;
-  $("projectTitleInput").value=getCardProjectName(di)==="Belum ditentukan"?"":getCardProjectName(di);
-  $("projectTitleErr").textContent="";
-  $("projectTitleModal").classList.remove("hide");
-  $("projectTitleInput").focus();
-}
-function closeProjectTitleEdit(){
-  $("projectTitleModal").classList.add("hide");
-  editingProjectTasks=null;
-}
-$("projectTitleCancel").onclick=closeProjectTitleEdit;
-$("projectTitleModal").onclick=e=>{if(e.target.id==="projectTitleModal")closeProjectTitleEdit()};
-$("projectTitleSave").onclick=async()=>{
-  if(!canAdmin() || !editingProjectTasks?.length)return;
-  const title=$("projectTitleInput").value.trim();
-  if(!title){$("projectTitleErr").textContent="Judul kerjaan wajib diisi.";return}
-
-  const ids=editingProjectTasks.map(t=>t.id);
-  const {error}=await sb.from("tasks").update({project_name:title}).in("id",ids);
-  if(error){$("projectTitleErr").textContent=error.message;return}
-
-  editingProjectTasks.forEach(t=>t.project_name=title);
-  closeProjectTitleEdit();
-  await loadTasks();
-  if(currentProject) openProject(currentProject);
-};
-
 let editingTask=null;
 function fillPicSelect(selectId,selected=""){
   const el=$(selectId); if(!el) return;
@@ -865,7 +946,7 @@ async function toggle(t){
   renderAll();
   if(currentProject) openProject(currentProject);
 }
-$("addTaskBtn").onclick=()=>{if(canAdmin())openTaskModal(new Date().toISOString().slice(0,10))};
+$("addTaskBtn").onclick=()=>{if(canAdmin())alert("Manajemen folder akan digunakan untuk membuat folder baru. Untuk menambah kerjaan, buka folder bulan terlebih dahulu.")};
 function openTaskModal(date){
   $("newDate").value=date;
   $("newLabel").value="";
