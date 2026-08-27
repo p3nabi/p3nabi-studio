@@ -1080,20 +1080,20 @@ $("editSave").onclick=async()=>{if(!canAdmin())return;if(!editingTask)return;con
 async function deleteTask(t){if(!canAdmin())return;if(!confirm(`Hapus pekerjaan "${t.title}"?`))return;const {error}=await sb.from("tasks").delete().eq("id",t.id);if(error)alert(error.message);else await loadTasks()}
 async function toggle(t){
   const next=!Boolean(t.completed);
-  const {error}=await sb.from("tasks").update({
-    completed:next,
-    completed_by:next?user.id:null,
-    completed_at:next?new Date().toISOString():null
-  }).eq("id",t.id);
+  const {data,error}=await sb.rpc("toggle_task_checklist",{
+    target_task_id:t.id,
+    new_completed:next
+  });
   if(error){
     alert("Checklist gagal disimpan: "+error.message);
     return;
   }
   // Update the local task immediately, then redraw the currently opened month.
   // This keeps the month open instead of returning to the folder list.
-  t.completed=next;
-  t.completed_by=next?user.id:null;
-  t.completed_at=next?new Date().toISOString():null;
+  const updated=Array.isArray(data)?data[0]:data;
+  t.completed=updated?.completed ?? next;
+  t.completed_by=updated?.completed_by ?? (next?user.id:null);
+  t.completed_at=updated?.completed_at ?? (next?new Date().toISOString():null);
   renderAll();
   if(currentProject) openProject(currentProject);
 }
