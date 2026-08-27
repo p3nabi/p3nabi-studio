@@ -591,6 +591,7 @@ async function selectWorkspace(id){
  workspaceRole=m.role;
  localStorage.setItem(CURRENT_WS_KEY,id);
  hideWorkspaceChooser();
+ showApp();
  setWorkspaceUI();
  await loadAll();
 }
