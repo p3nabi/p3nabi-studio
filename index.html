@@ -277,8 +277,30 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
     <label>Password</label><input id="password" type="password" placeholder="Minimal 6 karakter">
     <div id="authErr" class="err"></div>
     <button id="loginBtn" class="primary" style="width:100%">Masuk</button>
+    <button id="activateBtn" class="pill" style="width:100%;margin-top:8px">Aktifkan Akun Undangan</button>
     <div style="font-size:12px;color:#888;text-align:center;margin-top:10px">Akses hanya untuk anggota yang diundang oleh Super Admin.</div>
-    <p style="font-size:11px;color:#77737f;line-height:1.6">Akun baru dibuat otomatis. Jika email confirmation aktif, cek email sebelum masuk.</p>
+    <p style="font-size:11px;color:#77737f;line-height:1.6">Jika baru menerima undangan, klik link undangan dari email untuk membuat password. Jangan mencoba login dengan password lama sebelum akun diaktifkan.</p>
+    <div id="activationInfo" class="err" style="display:none"></div>
+  </div>
+</div>
+
+<div id="activationModal" class="modal hide">
+  <div class="box">
+    <div class="brandName">p3nabi'studio</div>
+    <div style="color:#999;font-size:12px;margin:4px 0 18px">AKTIVASI AKUN TIM</div>
+    <h2 style="margin:0 0 8px">Buat password</h2>
+    <p style="font-size:12px;color:#999;line-height:1.6;margin:0 0 14px">
+      Akun undangan kamu sudah dikenali. Buat password baru untuk menyelesaikan aktivasi.
+    </p>
+    <label>Password baru</label>
+    <input id="activationPassword" type="password" placeholder="Minimal 6 karakter">
+    <label style="display:block;margin-top:10px">Ulangi password</label>
+    <input id="activationPassword2" type="password" placeholder="Ulangi password">
+    <div id="activationErr" class="err"></div>
+    <div class="row">
+      <button id="activationLogout" class="pill">Keluar</button>
+      <button id="activationSave" class="primary">Aktifkan & Masuk</button>
+    </div>
   </div>
 </div>
 
@@ -408,6 +430,7 @@ const SUPABASE_URL="https://zmiokfhuwzvedlmisocb.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
 let sb,user,tasks=[],profiles=[],agendas=[],realtimeChannel=null,currentPage="dashboard",currentProject=null;
 let isSuperAdmin=false;
+let activationMode=false;
 let taskFilter="all";
 let calDate=new Date();calDate.setDate(1);let selectedDate=new Date().toISOString().slice(0,10);
 
@@ -426,20 +449,143 @@ function canAdmin(){return isSuperAdmin || roleOf()==="super_admin" || (user?.em
 function years(){return [...new Set(tasks.map(yearOf))].sort((a,b)=>b-a)}
 function currentYear(){return $("yearSelect")?.value||years()[0]||String(new Date().getFullYear())}
 
+function authLinkType(){
+ const hash=(window.location.hash||"").replace(/^#/,"");
+ const params=new URLSearchParams(hash);
+ return params.get("type")||"";
+}
+function clearAuthHash(){
+ try{window.history.replaceState({},document.title,window.location.pathname+window.location.search)}catch(_){}
+}
+function showLogin(){
+ $("activationModal")?.classList.add("hide");
+ $("login").classList.remove("hide");
+ $("app").classList.add("hide");
+ activationMode=false;
+}
+function showApp(){
+ $("activationModal")?.classList.add("hide");
+ $("login").classList.add("hide");
+ $("app").classList.remove("hide");
+ activationMode=false;
+}
+function showActivation(){
+ activationMode=true;
+ $("login").classList.add("hide");
+ $("app").classList.add("hide");
+ $("activationModal").classList.remove("hide");
+ $("activationErr").textContent="";
+ $("activationPassword").value="";
+ $("activationPassword2").value="";
+ setTimeout(()=>$("activationPassword").focus(),50);
+}
+
 async function start(){
  sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
  const {data:{session}}=await sb.auth.getSession();
- if(session){user=session.user;showApp();await loadAll()}
- sb.auth.onAuthStateChange(async(_,session)=>{user=session?.user||null;if(user){showApp();await loadAll()}else showLogin()});
+ const linkType=authLinkType();
+
+ if(session){
+   user=session.user;
+   if(linkType==="invite"||linkType==="recovery"){
+     showActivation();
+   }else{
+     showApp();
+     await loadAll();
+   }
+ }
+
+ sb.auth.onAuthStateChange(async(event,session)=>{
+   user=session?.user||null;
+
+   if(!user){
+     showLogin();
+     return;
+   }
+
+   // Supabase invitation/recovery links create a temporary authenticated session.
+   // Do not send invited users straight into the workspace before they set a password.
+   if(event==="PASSWORD_RECOVERY"||authLinkType()==="invite"||authLinkType()==="recovery"){
+     showActivation();
+     return;
+   }
+
+   showApp();
+   await loadAll();
+ });
 }
-function showLogin(){$("login").classList.remove("hide");$("app").classList.add("hide")}
-function showApp(){$("login").classList.add("hide");$("app").classList.remove("hide")}
+
 $("loginBtn").onclick=async()=>{
- $("authErr").textContent="";const email=$("email").value.trim(),password=$("password").value;
- if(!email||password.length<6){$("authErr").textContent="Isi email dan password minimal 6 karakter.";return}
- let r=await sb.auth.signInWithPassword({email,password});
- if(r.error)$("authErr").textContent="Email belum diundang, belum terverifikasi, atau password salah. Hubungi Super Admin.";
+ $("authErr").textContent="";
+ $("activationInfo").style.display="none";
+ const email=$("email").value.trim(),password=$("password").value;
+ if(!email||password.length<6){
+   $("authErr").textContent="Isi email dan password minimal 6 karakter.";
+   return;
+ }
+
+ const r=await sb.auth.signInWithPassword({email,password});
+ if(r.error){
+   $("authErr").textContent="Email/password belum valid. Jika ini akun hasil invite, klik link undangan di email lalu buat password terlebih dahulu.";
+ }
 }
+
+$("activateBtn").onclick=async()=>{
+ const email=$("email").value.trim();
+ $("authErr").textContent="";
+ $("activationInfo").style.display="none";
+
+ if(!email){
+   $("authErr").textContent="Masukkan email yang menerima undangan terlebih dahulu.";
+   return;
+ }
+
+ const {error}=await sb.auth.resetPasswordForEmail(email,{
+   redirectTo:window.location.origin+window.location.pathname
+ });
+
+ if(error){
+   $("authErr").textContent="Link aktivasi gagal dikirim: "+error.message;
+   return;
+ }
+
+ $("activationInfo").style.display="block";
+ $("activationInfo").style.color="#bca9d0";
+ $("activationInfo").textContent="Jika email tersebut memiliki akun tim, link untuk membuat password akan dikirim. Cek inbox/spam.";
+}
+
+$("activationSave").onclick=async()=>{
+ const p1=$("activationPassword").value;
+ const p2=$("activationPassword2").value;
+ $("activationErr").textContent="";
+
+ if(p1.length<6){
+   $("activationErr").textContent="Password minimal 6 karakter.";
+   return;
+ }
+ if(p1!==p2){
+   $("activationErr").textContent="Konfirmasi password tidak sama.";
+   return;
+ }
+
+ const {error}=await sb.auth.updateUser({password:p1});
+ if(error){
+   $("activationErr").textContent="Password gagal disimpan: "+error.message;
+   return;
+ }
+
+ clearAuthHash();
+ showApp();
+ await loadAll();
+}
+
+$("activationLogout").onclick=async()=>{
+ await sb.auth.signOut();
+ clearAuthHash();
+ showLogin();
+}
+
 $("logout").onclick=()=>sb.auth.signOut();
 
 async function loadAll(){
