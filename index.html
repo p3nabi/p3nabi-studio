@@ -840,8 +840,17 @@ $("workspaceLogout").onclick=async()=>{
 };
 $("switchWorkspace").onclick=async()=>{await loadWorkspaceContext();showWorkspaceChooser()};
 
+async function loadCurrentWorkspaceMembers(){
+ if(!currentWorkspaceId)return;
+ const r=await sb.from("workspace_members").select("workspace_id,user_id,role").eq("workspace_id",currentWorkspaceId);
+ if(!r.error){
+   workspaceMembers=workspaceMembers.filter(m=>m.workspace_id!==currentWorkspaceId).concat(r.data||[]);
+ }
+}
 async function loadAll(){
- await ensureProfile();await Promise.all([loadFolders(),loadTasks(),loadProfiles(),loadAgendas()]);
+ await ensureProfile();
+ await loadCurrentWorkspaceMembers();
+ await Promise.all([loadFolders(),loadTasks(),loadProfiles(),loadAgendas()]);
  renderAll();renderCalendar();renderSettings();
  if(!realtimeChannel){
   realtimeChannel=sb.channel("workspace-live")
