@@ -617,9 +617,10 @@ function loginExpired(){
 
 
 function authLinkType(){
- const hash=(window.location.hash||"").replace(/^#/,"");
- const params=new URLSearchParams(hash);
- return params.get("type")||"";
+  const hash=(window.location.hash||"").replace(/^#/,"");
+  const hashParams=new URLSearchParams(hash);
+  const queryParams=new URLSearchParams(window.location.search||"");
+  return hashParams.get("type") || queryParams.get("type") || "";
 }
 function clearAuthHash(){
  try{window.history.replaceState({},document.title,window.location.pathname+window.location.search)}catch(_){}
@@ -654,44 +655,66 @@ function showActivation(){
 }
 
 async function start(){
- sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
- const {data:{session}}=await sb.auth.getSession();
- const linkType=authLinkType();
+  // Register the listener BEFORE getSession().
+  // Otherwise PASSWORD_RECOVERY can fire before the listener exists.
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    user=session?.user||null;
 
- if(session){
-   user=session.user;
-   if(linkType==="invite"||linkType==="recovery"){
-     showActivation();
-   }else if(loginExpired()){
-     localStorage.removeItem(CURRENT_WS_KEY);
-     await sb.auth.signOut();
-     showLogin();
-   }else{
-     await enterWorkspaceFlow();
-   }
- }
+    if(!user){
+      if(authLinkType()==="recovery"){
+        showActivation();
+        return;
+      }
+      showLogin();
+      return;
+    }
 
- sb.auth.onAuthStateChange(async(event,session)=>{
-   user=session?.user||null;
+    if(event==="PASSWORD_RECOVERY" || authLinkType()==="recovery"){
+      showActivation();
+      return;
+    }
 
-   if(!user){
-     showLogin();
-     return;
-   }
+    if(authLinkType()==="invite"){
+      showActivation();
+      return;
+    }
 
-   // Supabase invitation/recovery links create a temporary authenticated session.
-   if(event==="PASSWORD_RECOVERY"||authLinkType()==="invite"||authLinkType()==="recovery"){
-     showActivation();
-     return;
-   }
+    if(event==="SIGNED_IN"){
+      loginFresh();
+      localStorage.removeItem(CURRENT_WS_KEY);
+    }
 
-   if(event==="SIGNED_IN"){
-     loginFresh();
-     localStorage.removeItem(CURRENT_WS_KEY);
-   }
-   await enterWorkspaceFlow();
- });
+    await enterWorkspaceFlow();
+  });
+
+  const {data:{session}}=await sb.auth.getSession();
+  const linkType=authLinkType();
+
+  if(linkType==="recovery"){
+    showActivation();
+    if(session) user=session.user;
+    return;
+  }
+
+  if(linkType==="invite"){
+    showActivation();
+    if(session) user=session.user;
+    return;
+  }
+
+  if(session){
+    user=session.user;
+
+    if(loginExpired()){
+      localStorage.removeItem(CURRENT_WS_KEY);
+      await sb.auth.signOut();
+      showLogin();
+    }else{
+      await enterWorkspaceFlow();
+    }
+  }
 }
 
 $("loginBtn").onclick=async()=>{
@@ -725,7 +748,7 @@ $("forgotPasswordBtn").onclick=async()=>{
  btn.disabled=true;
  btn.textContent="Mengirim...";
  const {error}=await sb.auth.resetPasswordForEmail(email,{
-   redirectTo:APP_URL+window.location.pathname
+   redirectTo:APP_URL+"/"
  });
  btn.disabled=false;
  btn.textContent=oldText;
@@ -749,7 +772,7 @@ $("activateBtn").onclick=async()=>{
  }
 
  const {error}=await sb.auth.resetPasswordForEmail(email,{
-   redirectTo:APP_URL+window.location.pathname
+   redirectTo:APP_URL+"/"
  });
 
  if(error){
@@ -763,28 +786,37 @@ $("activateBtn").onclick=async()=>{
 }
 
 $("activationSave").onclick=async()=>{
- const p1=$("activationPassword").value;
- const p2=$("activationPassword2").value;
- $("activationErr").textContent="";
+  const p1=$("activationPassword").value;
+  const p2=$("activationPassword2").value;
+  $("activationErr").textContent="";
 
- if(p1.length<6){
-   $("activationErr").textContent="Password minimal 6 karakter.";
-   return;
- }
- if(p1!==p2){
-   $("activationErr").textContent="Konfirmasi password tidak sama.";
-   return;
- }
+  if(p1.length<6){
+    $("activationErr").textContent="Password minimal 6 karakter.";
+    return;
+  }
+  if(p1!==p2){
+    $("activationErr").textContent="Konfirmasi password tidak sama.";
+    return;
+  }
 
- const {error}=await sb.auth.updateUser({password:p1});
- if(error){
-   $("activationErr").textContent="Password gagal disimpan: "+error.message;
-   return;
- }
+  const btn=$("activationSave");
+  const oldText=btn.textContent;
+  btn.disabled=true;
+  btn.textContent="Menyimpan...";
 
- clearAuthHash();
- loginFresh();
- await enterWorkspaceFlow();
+  const {error}=await sb.auth.updateUser({password:p1});
+
+  btn.disabled=false;
+  btn.textContent=oldText;
+
+  if(error){
+    $("activationErr").textContent="Password gagal disimpan: "+error.message;
+    return;
+  }
+
+  clearAuthHash();
+  loginFresh();
+  await enterWorkspaceFlow();
 }
 
 $("activationLogout").onclick=async()=>{
