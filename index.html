@@ -266,6 +266,39 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 @media(max-width:1200px){#projectView.compactProjectView{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:16px !important}}
 @media(max-width:900px){#projectView.compactProjectView{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px !important}}
 @media(max-width:600px){#projectView.compactProjectView{grid-template-columns:1fr !important;gap:12px !important}}
+
+/* MULTI-WORKSPACE */
+:root{--accent:#a95cff;--accent2:#c67cff;--accentGlow:rgba(169,92,255,.18)}
+body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transparent 35%),var(--bg)}
+#workspaceModal{z-index:50}
+.workspaceChooser{width:min(920px,100%)!important;max-height:90vh;overflow:auto}
+.workspaceChooserHead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}
+.workspaceChooserTitle{font-size:25px;font-weight:850;letter-spacing:-1px;margin:0}
+.workspaceChooserSub{font-size:12px;color:#85818d;margin-top:5px;line-height:1.5}
+.workspaceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.workspaceOption{position:relative;text-align:left;width:100%;border:1px solid #302d3a;background:linear-gradient(145deg,#181720,#111118);border-radius:17px;padding:18px;color:#fff;transition:.16s;min-height:170px}
+.workspaceOption:not(.locked):hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 14px 35px var(--accentGlow)}
+.workspaceOption.locked{cursor:not-allowed;opacity:.55}
+.workspaceOption .woIcon{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:16px;background:color-mix(in srgb,var(--accent) 18%,#171720);border:1px solid color-mix(in srgb,var(--accent) 35%,#292735);color:var(--accent2);margin-bottom:15px}
+.workspaceOption .woName{font-size:16px;font-weight:850}
+.workspaceOption .woDesc{font-size:10px;color:#85818d;margin-top:4px}
+.workspaceOption .woRole{font-size:10px;color:#bdb8c6;margin-top:13px}
+.workspaceOption .woAction{position:absolute;right:14px;bottom:14px;border:1px solid #393542;background:#1a1922;border-radius:9px;padding:7px 10px;font-size:10px;font-weight:800;color:#ddd}
+.workspaceOption:not(.locked) .woAction{border-color:color-mix(in srgb,var(--accent) 40%,#393542);color:var(--accent2)}
+.workspaceOption.locked .woAction{color:#77737f}
+.workspaceSwitch{border:1px solid var(--line);background:#13131a;color:#e6e2ea;border-radius:10px;padding:9px 12px;font-size:11px}
+.workspaceSwitch:hover{border-color:var(--accent);color:#fff}
+.workspaceBadge{display:inline-flex;align-items:center;gap:6px;font-size:9px;color:#aaa6b3;border:1px solid #302d3a;background:#14141b;border-radius:999px;padding:4px 7px;margin-top:7px}
+.navBtn.active{box-shadow:inset 3px 0 var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 55%,#17131f),#251b34 75%,transparent)}
+.taskTab.active{background:linear-gradient(90deg,var(--accent),var(--accent2));border-color:var(--accent);box-shadow:0 6px 18px var(--accentGlow)}
+.progressFill,.miniProgressFill{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.check.done{border-color:var(--accent);background:var(--accent)}
+.primary,.saveBtn{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.calDay.today .dayNum{background:var(--accent)}
+.calDot,.dot{background:var(--accent)}
+.agendaTime{color:var(--accent2)}
+.priorityBadge{border-color:color-mix(in srgb,var(--accent) 45%,#4a3a62);background:color-mix(in srgb,var(--accent) 10%,#1c1626);color:var(--accent2)}
+@media(max-width:700px){.workspaceGrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -304,9 +337,25 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
   </div>
 </div>
 
+
+<div id="workspaceModal" class="modal hide">
+  <div class="box workspaceChooser">
+    <div class="workspaceChooserHead">
+      <div>
+        <div class="eyebrow">TEAM WORKSPACE</div>
+        <h2 class="workspaceChooserTitle">Pilih Workspace</h2>
+        <div class="workspaceChooserSub">Pilih perusahaan / workspace yang ingin kamu buka. Workspace tanpa akses tetap ditampilkan agar kamu mengetahui workspace yang tersedia.</div>
+      </div>
+      <button id="workspaceLogout" class="logout">Keluar</button>
+    </div>
+    <div id="workspaceList" class="workspaceGrid"></div>
+    <div id="workspaceErr" class="err"></div>
+  </div>
+</div>
+
 <div id="app" class="app hide">
   <aside class="sidebar">
-    <div class="brand"><div class="brandName">p3nabi'studio</div><div class="brandSub">VIDEOGRAPHY & EDITING</div></div>
+    <div class="brand"><div class="brandName" id="brandName">p3nabi'studio</div><div class="brandSub" id="brandSub">VIDEOGRAPHY & EDITING</div></div>
     <nav class="nav">
       <button class="navBtn active" data-page="dashboard"><span class="navIcon">▦</span><span>Dashboard</span></button>
       <button class="navBtn" data-page="folders"><span class="navIcon">▰</span><span>Kerjaan</span></button>
@@ -314,14 +363,14 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
       <button class="navBtn" data-page="team"><span class="navIcon">♧</span><span>Team</span></button>
       <button class="navBtn" data-page="settings"><span class="navIcon">⚙</span><span>Settings</span></button>
     </nav>
-    <div class="workspace"><div class="workspaceLabel">WORKSPACE</div><div class="workspaceCard"><div class="avatar" id="sideAvatar">P3</div><div><b>Team Content</b><small id="sideJob">Tim kerja</small></div></div></div>
+    <div class="workspace"><div class="workspaceLabel">WORKSPACE</div><div class="workspaceCard"><div class="avatar" id="sideAvatar">P3</div><div style="min-width:0"><b id="sideWorkspaceName">Team Content</b><small id="sideJob">Tim kerja</small><div class="workspaceBadge" id="sideWorkspaceRole">Workspace</div></div></div></div>
     <div class="sidebarQuote"><div class="quoteMark">“</div>Great visuals don't just tell stories, they make people feel something.<div class="signature">Keep Creating.</div></div>
   </aside>
 
   <main class="main"><div class="content">
     <header class="topbar">
       <div><div class="eyebrow">Selamat datang kembali,</div><div class="pageTitle" id="pageTitle">Team Content 👋</div><div class="pageSub" id="pageSub">Recap project, pekerjaan, dan performa tim.</div></div>
-      <div class="userArea"><div class="userInfo"><b id="userName">p3nabi'</b><small id="userJob">Team Content</small><small id="userRole" style="color:#b36bff;margin-top:3px">Karyawan</small></div><div class="userAvatar" id="userAvatar">P3</div><button id="logout" class="logout">Keluar</button></div>
+      <div class="userArea"><div class="userInfo"><b id="userName">p3nabi'</b><small id="userJob">Team Content</small><small id="userRole" style="color:#b36bff;margin-top:3px">Karyawan</small></div><div class="userAvatar" id="userAvatar">P3</div><button id="switchWorkspace" class="workspaceSwitch">⇄ Workspace</button><button id="logout" class="logout">Keluar</button></div>
     </header>
 
     <section id="page-dashboard" class="page active">
@@ -432,6 +481,8 @@ const SUPABASE_ANON_KEY="sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
 const APP_URL="https://p3nabi-studio.vercel.app";
 let sb,user,tasks=[],profiles=[],agendas=[],realtimeChannel=null,currentPage="dashboard",currentProject=null;
 let isSuperAdmin=false;
+let workspaceList=[],workspaceMembers=[],currentWorkspace=null,currentWorkspaceId=null;
+let workspaceRole=null;
 let activationMode=false;
 let taskFilter="all";
 let calDate=new Date();calDate.setDate(1);let selectedDate=new Date().toISOString().slice(0,10);
@@ -446,10 +497,120 @@ const statusFor=items=>{const d=items.filter(t=>t.completed).length;return d===0
 const monthLabel=k=>new Date(k+"-01T00:00:00").toLocaleDateString("id-ID",{month:"long",year:"numeric"});
 function avatarHtml(p,size=""){return p?.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:esc(initials(p?.username||p?.email||"P3"))}
 function getProfile(id=user?.id){return profiles.find(p=>p.id===id)}
-function roleOf(){const p=getProfile();return p?.role||((user?.email||"").toLowerCase()==="haniffabaz@gmail.com"?"super_admin":"employee")}
-function canAdmin(){return isSuperAdmin || roleOf()==="super_admin" || (user?.email||"").toLowerCase()==="haniffabaz@gmail.com"}
+function roleOf(){return workspaceRole||getProfile()?.role||"employee"}
+function canAdmin(){return currentWorkspaceAdmin()}
 function years(){return [...new Set(tasks.map(yearOf))].sort((a,b)=>b-a)}
 function currentYear(){return $("yearSelect")?.value||years()[0]||String(new Date().getFullYear())}
+const LAST_LOGIN_KEY="p3nabi_last_login_at";
+const CURRENT_WS_KEY="p3nabi_current_workspace_id";
+const dayMs=24*60*60*1000;
+function currentWorkspaceName(){return currentWorkspace?.name||"Workspace"}
+function workspaceRoleOf(id=currentWorkspaceId){
+ const m=workspaceMembers.find(x=>x.workspace_id===id&&x.user_id===user?.id);
+ return m?.role||null;
+}
+function currentWorkspaceAdmin(){
+ return (user?.email||"").toLowerCase()==="haniffabaz@gmail.com" ||
+   workspaceRole==="super_admin";
+}
+function initialsWorkspace(name){return initials(name||"WS")}
+function workspaceColor(w){
+ const dbColor=w?.theme_color;
+ if(dbColor)return dbColor;
+ return w?.name==="ABAS ARSITEK"?"#38BDF8":"#A855F7";
+}
+function applyWorkspaceTheme(){
+ const c=workspaceColor(currentWorkspace);
+ const isSky=(c.toLowerCase()==="#38bdf8"||c.toLowerCase()==="#0ea5e9");
+ document.documentElement.style.setProperty("--accent",c);
+ document.documentElement.style.setProperty("--accent2",isSky?"#7dd3fc":"#c67cff");
+ document.documentElement.style.setProperty("--accentGlow",isSky?"rgba(56,189,248,.18)":"rgba(169,92,255,.18)");
+ document.body.classList.toggle("workspaceSky",isSky);
+}
+function setWorkspaceUI(){
+ if(!currentWorkspace)return;
+ applyWorkspaceTheme();
+ $("brandName").textContent=currentWorkspace.name||"Team Workspace";
+ $("brandSub").textContent=currentWorkspace.description||"TEAM WORKSPACE";
+ $("sideWorkspaceName").textContent=currentWorkspace.name||"Workspace";
+ $("sideWorkspaceRole").textContent=workspaceRole==="super_admin"?"Super Admin":"Member";
+ $("sideAvatar").textContent=initialsWorkspace(currentWorkspace.name);
+ $("sideAvatar").style.background=`linear-gradient(135deg,${workspaceColor(currentWorkspace)},#ffffff22)`;
+ document.title=`${currentWorkspace.name||"Team Workspace"} — Team Workspace`;
+}
+function showWorkspaceChooser(){
+ $("workspaceModal").classList.remove("hide");
+ $("login").classList.add("hide");
+ $("activationModal")?.classList.add("hide");
+ $("app").classList.add("hide");
+ renderWorkspaceChooser();
+}
+function hideWorkspaceChooser(){ $("workspaceModal").classList.add("hide"); }
+function renderWorkspaceChooser(){
+ const box=$("workspaceList");
+ box.innerHTML="";
+ const ordered=[...workspaceList].sort((a,b)=>{
+   const ap=a.name==="p3nabi'studio"?0:1, bp=b.name==="p3nabi'studio"?0:1;
+   return ap-bp || String(a.created_at||"").localeCompare(String(b.created_at||""));
+ });
+ ordered.forEach(w=>{
+   const member=workspaceMembers.find(m=>m.workspace_id===w.id&&m.user_id===user?.id);
+   const card=document.createElement("button");
+   card.type="button";
+   card.className="workspaceOption"+(member?"":" locked");
+   const color=workspaceColor(w);
+   card.style.setProperty("--accent",color);
+   card.innerHTML=`
+     <div class="woIcon" style="color:${esc(color)}">${esc(initialsWorkspace(w.name))}</div>
+     <div class="woName">${esc(w.name)}</div>
+     <div class="woDesc">${esc(w.description||"Team Workspace")}</div>
+     <div class="woRole">${member?"✓ Kamu punya akses · "+(member.role==="super_admin"?"Super Admin":"Member"):"🔒 Kamu tidak memiliki akses"}</div>
+     <div class="woAction">${member?"Masuk Workspace →":"Tidak tersedia"}</div>
+   `;
+   if(member) card.onclick=()=>selectWorkspace(w.id);
+   else card.onclick=e=>e.preventDefault();
+   box.appendChild(card);
+ });
+ $("workspaceErr").textContent=ordered.length?"":"Belum ada workspace yang tersedia.";
+}
+async function loadWorkspaceContext(){
+ const wr=await sb.from("workspaces").select("*").order("created_at");
+ if(wr.error){$("workspaceErr").textContent=wr.error.message;return false}
+ workspaceList=wr.data||[];
+ const mr=await sb.from("workspace_members").select("workspace_id,user_id,role").eq("user_id",user.id);
+ if(mr.error){$("workspaceErr").textContent=mr.error.message;return false}
+ workspaceMembers=mr.data||[];
+ return true;
+}
+async function selectWorkspace(id){
+ const w=workspaceList.find(x=>x.id===id);
+ const m=workspaceMembers.find(x=>x.workspace_id===id&&x.user_id===user.id);
+ if(!w||!m)return;
+ currentWorkspace=w;
+ currentWorkspaceId=id;
+ workspaceRole=m.role;
+ localStorage.setItem(CURRENT_WS_KEY,id);
+ hideWorkspaceChooser();
+ setWorkspaceUI();
+ await loadAll();
+}
+async function enterWorkspaceFlow(){
+ if(!user)return;
+ const ok=await loadWorkspaceContext();
+ if(!ok)return;
+ const saved=localStorage.getItem(CURRENT_WS_KEY);
+ const valid=workspaceMembers.some(m=>m.workspace_id===saved);
+ if(valid) await selectWorkspace(saved);
+ else showWorkspaceChooser();
+}
+function loginFresh(){localStorage.setItem(LAST_LOGIN_KEY,new Date().toISOString())}
+function loginExpired(){
+ const raw=localStorage.getItem(LAST_LOGIN_KEY);
+ if(!raw)return true;
+ const t=Date.parse(raw);
+ return !Number.isFinite(t) || (Date.now()-t)>=dayMs;
+}
+
 
 function authLinkType(){
  const hash=(window.location.hash||"").replace(/^#/,"");
@@ -492,9 +653,12 @@ async function start(){
    user=session.user;
    if(linkType==="invite"||linkType==="recovery"){
      showActivation();
+   }else if(loginExpired()){
+     localStorage.removeItem(CURRENT_WS_KEY);
+     await sb.auth.signOut();
+     showLogin();
    }else{
-     showApp();
-     await loadAll();
+     await enterWorkspaceFlow();
    }
  }
 
@@ -507,14 +671,16 @@ async function start(){
    }
 
    // Supabase invitation/recovery links create a temporary authenticated session.
-   // Do not send invited users straight into the workspace before they set a password.
    if(event==="PASSWORD_RECOVERY"||authLinkType()==="invite"||authLinkType()==="recovery"){
      showActivation();
      return;
    }
 
-   showApp();
-   await loadAll();
+   if(event==="SIGNED_IN"){
+     loginFresh();
+     localStorage.removeItem(CURRENT_WS_KEY);
+   }
+   await enterWorkspaceFlow();
  });
 }
 
@@ -530,6 +696,8 @@ $("loginBtn").onclick=async()=>{
  const r=await sb.auth.signInWithPassword({email,password});
  if(r.error){
    $("authErr").textContent="Email/password belum valid. Jika ini akun hasil invite, klik link undangan di email lalu buat password terlebih dahulu.";
+ }else{
+   loginFresh();
  }
 }
 
@@ -578,8 +746,8 @@ $("activationSave").onclick=async()=>{
  }
 
  clearAuthHash();
- showApp();
- await loadAll();
+ loginFresh();
+ await enterWorkspaceFlow();
 }
 
 $("activationLogout").onclick=async()=>{
@@ -588,7 +756,9 @@ $("activationLogout").onclick=async()=>{
  showLogin();
 }
 
-$("logout").onclick=()=>sb.auth.signOut();
+$("logout").onclick=async()=>{localStorage.removeItem(CURRENT_WS_KEY);await sb.auth.signOut()};
+$("workspaceLogout").onclick=async()=>{localStorage.removeItem(CURRENT_WS_KEY);await sb.auth.signOut();showLogin()};
+$("switchWorkspace").onclick=async()=>{await loadWorkspaceContext();showWorkspaceChooser()};
 
 async function loadAll(){
  await ensureProfile();await Promise.all([loadTasks(),loadProfiles(),loadAgendas()]);
@@ -608,9 +778,21 @@ async function ensureProfile(){
   await sb.from("profiles").insert({id:user.id,username:name,jobdesk:"Team Content",role:(user.email||"").toLowerCase()==="haniffabaz@gmail.com"?"super_admin":"employee"});
  }
 }
-async function loadTasks(){const r=await sb.from("tasks").select("*").order("task_date").order("created_at");if(!r.error){tasks=r.data||[];renderAll()}}
-async function loadProfiles(){const r=await sb.from("profiles").select("*").order("username");if(!r.error){profiles=r.data||[];isSuperAdmin=canAdmin();renderAll();renderSettings();if(!$("editModal").classList.contains("hide")&&editingTask)fillPicSelect("editPic",(editingTask.pic||"").trim());}}
-async function loadAgendas(){const r=await sb.from("agendas").select("*").order("agenda_date").order("agenda_time");if(!r.error){agendas=r.data||[];renderCalendar()}}
+async function loadTasks(){
+  const r=await sb.from("tasks").select("*").eq("workspace_id",currentWorkspaceId).order("task_date").order("created_at");
+  if(!r.error){tasks=r.data||[];renderAll()}
+}
+async function loadProfiles(){
+  const ids=workspaceMembers.filter(m=>m.workspace_id===currentWorkspaceId).map(m=>m.user_id);
+  const r=ids.length
+    ? await sb.from("profiles").select("*").in("id",ids).order("username")
+    : {data:[],error:null};
+  if(!r.error){profiles=r.data||[];isSuperAdmin=canAdmin();renderAll();renderSettings();if(!$("editModal").classList.contains("hide")&&editingTask)fillPicSelect("editPic",(editingTask.pic||"").trim());}
+}
+async function loadAgendas(){
+  const r=await sb.from("agendas").select("*").order("agenda_date").order("agenda_time");
+  if(!r.error){agendas=r.data||[];renderCalendar()}
+}
 function userUI(){
  const p=getProfile()||{username:user?.email?.split("@")[0]||"p3nabi",jobdesk:"Team Content"};
  $("userName").textContent=p.username||"p3nabi";$("userJob").textContent=p.jobdesk||"Team Content";$("sideJob").textContent=p.jobdesk||"Team Content";$("userRole").textContent=canAdmin()?"Super Admin":"Karyawan";
@@ -724,6 +906,7 @@ async function duplicateJob(items){
     title:t.title,
     project_name:t.project_name||null,
     pic:t.pic||null,
+    workspace_id:currentWorkspaceId,
     created_by:user.id,
     completed:false,
     completed_by:null,
@@ -1088,12 +1271,9 @@ async function toggle(t){
     alert("Checklist gagal disimpan: "+error.message);
     return;
   }
-  // Update the local task immediately, then redraw the currently opened month.
-  // This keeps the month open instead of returning to the folder list.
-  const updated=Array.isArray(data)?data[0]:data;
-  t.completed=updated?.completed ?? next;
-  t.completed_by=updated?.completed_by ?? (next?user.id:null);
-  t.completed_at=updated?.completed_at ?? (next?new Date().toISOString():null);
+  t.completed=next;
+  t.completed_by=next?user.id:null;
+  t.completed_at=next?new Date().toISOString():null;
   renderAll();
   if(currentProject) openProject(currentProject);
 }
@@ -1109,7 +1289,7 @@ function openTaskModal(date){
 }
 function closeTaskModal(){$("taskModal").classList.add("hide")}
 $("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
-$("taskSave").onclick=async()=>{if(!canAdmin())return;const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
+$("taskSave").onclick=async()=>{if(!canAdmin())return;const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,workspace_id:currentWorkspaceId,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
 
 function setPage(page){if(!canAdmin() && !["folders","calendar","team","settings"].includes(page)) page="folders";currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
