@@ -308,6 +308,9 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
     <div style="color:#999;font-size:12px;margin:4px 0 18px">TEAM WORKSPACE</div>
     <label>Email</label><input id="email" type="email" placeholder="nama@email.com">
     <label>Password</label><input id="password" type="password" placeholder="Minimal 6 karakter">
+    <div style="display:flex;justify-content:flex-end;margin-top:7px">
+      <button id="forgotPasswordBtn" type="button" style="border:0;background:transparent;color:#b36bff;font-size:11px;padding:0;cursor:pointer">Lupa password?</button>
+    </div>
     <div id="authErr" class="err"></div>
     <button id="loginBtn" class="primary" style="width:100%">Masuk</button>
     <button id="activateBtn" class="pill" style="width:100%;margin-top:8px">Aktifkan Akun Undangan</button>
@@ -321,8 +324,8 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
   <div class="box">
     <div class="brandName">p3nabi'studio</div>
     <div style="color:#999;font-size:12px;margin:4px 0 18px">AKTIVASI AKUN TIM</div>
-    <h2 style="margin:0 0 8px">Buat password</h2>
-    <p style="font-size:12px;color:#999;line-height:1.6;margin:0 0 14px">
+    <h2 id="activationTitle" style="margin:0 0 8px">Buat password</h2>
+    <p id="activationDescription" style="font-size:12px;color:#999;line-height:1.6;margin:0 0 14px">
       Akun undangan kamu sudah dikenali. Buat password baru untuk menyelesaikan aktivasi.
     </p>
     <label>Password baru</label>
@@ -641,6 +644,12 @@ function showActivation(){
  $("activationErr").textContent="";
  $("activationPassword").value="";
  $("activationPassword2").value="";
+ const recovery=authLinkType()==="recovery" || activationMode===true && window.location.hash.includes("type=recovery");
+ $("activationTitle").textContent=recovery?"Reset password":"Buat password";
+ $("activationDescription").textContent=recovery
+   ?"Masukkan password baru untuk akun kamu. Password lama akan diganti dengan password ini."
+   :"Akun undangan kamu sudah dikenali. Buat password baru untuk menyelesaikan aktivasi.";
+ $("activationSave").textContent=recovery?"Simpan Password":"Aktifkan & Masuk";
  setTimeout(()=>$("activationPassword").focus(),50);
 }
 
@@ -701,6 +710,33 @@ $("loginBtn").onclick=async()=>{
    loginFresh();
  }
 }
+
+$("forgotPasswordBtn").onclick=async()=>{
+ const email=$("email").value.trim();
+ $("authErr").textContent="";
+ $("activationInfo").style.display="none";
+ if(!email){
+   $("authErr").textContent="Masukkan email akun kamu terlebih dahulu.";
+   $("email").focus();
+   return;
+ }
+ const btn=$("forgotPasswordBtn");
+ const oldText=btn.textContent;
+ btn.disabled=true;
+ btn.textContent="Mengirim...";
+ const {error}=await sb.auth.resetPasswordForEmail(email,{
+   redirectTo:APP_URL+window.location.pathname
+ });
+ btn.disabled=false;
+ btn.textContent=oldText;
+ if(error){
+   $("authErr").textContent="Link reset password gagal dikirim: "+error.message;
+   return;
+ }
+ $("activationInfo").style.display="block";
+ $("activationInfo").style.color="#bca9d0";
+ $("activationInfo").textContent="Jika email tersebut memiliki akun, link reset password akan dikirim. Cek inbox dan folder spam.";
+};
 
 $("activateBtn").onclick=async()=>{
  const email=$("email").value.trim();
