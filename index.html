@@ -428,6 +428,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 <script>
 const SUPABASE_URL="https://zmiokfhuwzvedlmisocb.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
+// Production URL — digunakan untuk redirect aktivasi/invite agar tidak pernah kembali ke localhost.
+const APP_URL="https://p3nabi-studio.vercel.app";
 let sb,user,tasks=[],profiles=[],agendas=[],realtimeChannel=null,currentPage="dashboard",currentProject=null;
 let isSuperAdmin=false;
 let activationMode=false;
@@ -542,7 +544,7 @@ $("activateBtn").onclick=async()=>{
  }
 
  const {error}=await sb.auth.resetPasswordForEmail(email,{
-   redirectTo:window.location.origin+window.location.pathname
+   redirectTo:APP_URL+window.location.pathname
  });
 
  if(error){
