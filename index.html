@@ -356,6 +356,17 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
   </div>
 </div>
 
+<div id="folderModal" class="modal hide">
+  <div class="box">
+    <h3 style="margin:0 0 6px">Buat Folder</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 14px">Buat folder untuk mengelompokkan pekerjaan di workspace ini.</p>
+    <div class="formGroup"><label>Nama folder</label><input id="folderNameInput" placeholder="Contoh: September 2026"></div>
+    <div class="formGroup"><label>Deskripsi (opsional)</label><textarea id="folderDescriptionInput" placeholder="Keterangan folder"></textarea></div>
+    <div id="folderErr" class="err"></div>
+    <div class="row"><button class="secondary" id="folderCancel">Batal</button><button class="primary" id="folderSave">Buat Folder</button></div>
+  </div>
+</div>
+
 <div id="app" class="app hide">
   <aside class="sidebar">
     <div class="brand"><div class="brandName" id="brandName">p3nabi'studio</div><div class="brandSub" id="brandSub">VIDEOGRAPHY & EDITING</div></div>
@@ -391,7 +402,7 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
 
     <section id="page-folders" class="page">
       <div id="folderHome">
-        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary adminOnly" id="addTaskBtn">＋ Tambah Folder</button></div>
+        <div class="sectionHead"><div><h2>Kerjaan</h2><p>Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan.</p></div><button class="primary adminOnly" id="addFolderBtn">＋ Tambah Folder</button></div>
       <div class="legend">
         <div class="legendTitle">Keterangan warna folder</div>
         <div class="legendItem"><span class="legendFolder red"></span><div><b>Merah</b> Belum selesai</div></div>
@@ -482,7 +493,7 @@ const SUPABASE_URL="https://zmiokfhuwzvedlmisocb.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
 // Production URL — digunakan untuk redirect aktivasi/invite agar tidak pernah kembali ke localhost.
 const APP_URL="https://p3nabi-studio.vercel.app";
-let sb,user,tasks=[],profiles=[],agendas=[],realtimeChannel=null,currentPage="dashboard",currentProject=null;
+let sb,user,tasks=[],folders=[],profiles=[],agendas=[],realtimeChannel=null,currentPage="dashboard",currentProject=null,currentFolderId=null;
 let isSuperAdmin=false;
 let workspaceList=[],workspaceMembers=[],currentWorkspace=null,currentWorkspaceId=null;
 let workspaceRole=null;
@@ -617,10 +628,9 @@ function loginExpired(){
 
 
 function authLinkType(){
-  const hash=(window.location.hash||"").replace(/^#/,"");
-  const hashParams=new URLSearchParams(hash);
-  const queryParams=new URLSearchParams(window.location.search||"");
-  return hashParams.get("type") || queryParams.get("type") || "";
+ const hash=(window.location.hash||"").replace(/^#/,"");
+ const params=new URLSearchParams(hash);
+ return params.get("type")||"";
 }
 function clearAuthHash(){
  try{window.history.replaceState({},document.title,window.location.pathname+window.location.search)}catch(_){}
@@ -655,66 +665,44 @@ function showActivation(){
 }
 
 async function start(){
-  sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+ sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-  // Register the listener BEFORE getSession().
-  // Otherwise PASSWORD_RECOVERY can fire before the listener exists.
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    user=session?.user||null;
+ const {data:{session}}=await sb.auth.getSession();
+ const linkType=authLinkType();
 
-    if(!user){
-      if(authLinkType()==="recovery"){
-        showActivation();
-        return;
-      }
-      showLogin();
-      return;
-    }
+ if(session){
+   user=session.user;
+   if(linkType==="invite"||linkType==="recovery"){
+     showActivation();
+   }else if(loginExpired()){
+     localStorage.removeItem(CURRENT_WS_KEY);
+     await sb.auth.signOut();
+     showLogin();
+   }else{
+     await enterWorkspaceFlow();
+   }
+ }
 
-    if(event==="PASSWORD_RECOVERY" || authLinkType()==="recovery"){
-      showActivation();
-      return;
-    }
+ sb.auth.onAuthStateChange(async(event,session)=>{
+   user=session?.user||null;
 
-    if(authLinkType()==="invite"){
-      showActivation();
-      return;
-    }
+   if(!user){
+     showLogin();
+     return;
+   }
 
-    if(event==="SIGNED_IN"){
-      loginFresh();
-      localStorage.removeItem(CURRENT_WS_KEY);
-    }
+   // Supabase invitation/recovery links create a temporary authenticated session.
+   if(event==="PASSWORD_RECOVERY"||authLinkType()==="invite"||authLinkType()==="recovery"){
+     showActivation();
+     return;
+   }
 
-    await enterWorkspaceFlow();
-  });
-
-  const {data:{session}}=await sb.auth.getSession();
-  const linkType=authLinkType();
-
-  if(linkType==="recovery"){
-    showActivation();
-    if(session) user=session.user;
-    return;
-  }
-
-  if(linkType==="invite"){
-    showActivation();
-    if(session) user=session.user;
-    return;
-  }
-
-  if(session){
-    user=session.user;
-
-    if(loginExpired()){
-      localStorage.removeItem(CURRENT_WS_KEY);
-      await sb.auth.signOut();
-      showLogin();
-    }else{
-      await enterWorkspaceFlow();
-    }
-  }
+   if(event==="SIGNED_IN"){
+     loginFresh();
+     localStorage.removeItem(CURRENT_WS_KEY);
+   }
+   await enterWorkspaceFlow();
+ });
 }
 
 $("loginBtn").onclick=async()=>{
@@ -748,7 +736,7 @@ $("forgotPasswordBtn").onclick=async()=>{
  btn.disabled=true;
  btn.textContent="Mengirim...";
  const {error}=await sb.auth.resetPasswordForEmail(email,{
-   redirectTo:APP_URL+"/"
+   redirectTo:APP_URL+window.location.pathname
  });
  btn.disabled=false;
  btn.textContent=oldText;
@@ -772,7 +760,7 @@ $("activateBtn").onclick=async()=>{
  }
 
  const {error}=await sb.auth.resetPasswordForEmail(email,{
-   redirectTo:APP_URL+"/"
+   redirectTo:APP_URL+window.location.pathname
  });
 
  if(error){
@@ -786,37 +774,28 @@ $("activateBtn").onclick=async()=>{
 }
 
 $("activationSave").onclick=async()=>{
-  const p1=$("activationPassword").value;
-  const p2=$("activationPassword2").value;
-  $("activationErr").textContent="";
+ const p1=$("activationPassword").value;
+ const p2=$("activationPassword2").value;
+ $("activationErr").textContent="";
 
-  if(p1.length<6){
-    $("activationErr").textContent="Password minimal 6 karakter.";
-    return;
-  }
-  if(p1!==p2){
-    $("activationErr").textContent="Konfirmasi password tidak sama.";
-    return;
-  }
+ if(p1.length<6){
+   $("activationErr").textContent="Password minimal 6 karakter.";
+   return;
+ }
+ if(p1!==p2){
+   $("activationErr").textContent="Konfirmasi password tidak sama.";
+   return;
+ }
 
-  const btn=$("activationSave");
-  const oldText=btn.textContent;
-  btn.disabled=true;
-  btn.textContent="Menyimpan...";
+ const {error}=await sb.auth.updateUser({password:p1});
+ if(error){
+   $("activationErr").textContent="Password gagal disimpan: "+error.message;
+   return;
+ }
 
-  const {error}=await sb.auth.updateUser({password:p1});
-
-  btn.disabled=false;
-  btn.textContent=oldText;
-
-  if(error){
-    $("activationErr").textContent="Password gagal disimpan: "+error.message;
-    return;
-  }
-
-  clearAuthHash();
-  loginFresh();
-  await enterWorkspaceFlow();
+ clearAuthHash();
+ loginFresh();
+ await enterWorkspaceFlow();
 }
 
 $("activationLogout").onclick=async()=>{
@@ -830,11 +809,12 @@ $("workspaceLogout").onclick=async()=>{localStorage.removeItem(CURRENT_WS_KEY);a
 $("switchWorkspace").onclick=async()=>{await loadWorkspaceContext();showWorkspaceChooser()};
 
 async function loadAll(){
- await ensureProfile();await Promise.all([loadTasks(),loadProfiles(),loadAgendas()]);
+ await ensureProfile();await Promise.all([loadFolders(),loadTasks(),loadProfiles(),loadAgendas()]);
  renderAll();renderCalendar();renderSettings();
  if(!realtimeChannel){
   realtimeChannel=sb.channel("workspace-live")
    .on("postgres_changes",{event:"*",schema:"public",table:"tasks"},loadTasks)
+    .on("postgres_changes",{event:"*",schema:"public",table:"folders"},loadFolders)
    .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},loadProfiles)
    .on("postgres_changes",{event:"*",schema:"public",table:"agendas"},loadAgendas)
    .subscribe();
@@ -846,6 +826,11 @@ async function ensureProfile(){
   const name=user.email?.split("@")[0]||"p3nabi";
   await sb.from("profiles").insert({id:user.id,username:name,jobdesk:"Team Content",role:(user.email||"").toLowerCase()==="haniffabaz@gmail.com"?"super_admin":"employee"});
  }
+}
+async function loadFolders(){
+  const r=await sb.from("folders").select("*").eq("workspace_id",currentWorkspaceId).order("created_at");
+  if(r.error){console.error("Gagal memuat folder:",r.error);folders=[];return}
+  folders=r.data||[];
 }
 async function loadTasks(){
   const r=await sb.from("tasks").select("*").eq("workspace_id",currentWorkspaceId).order("task_date").order("created_at");
@@ -914,26 +899,33 @@ function updateTaskFilterUI(){
     btn.classList.toggle("active",btn.dataset.taskFilter===taskFilter);
   });
 }
-function folderData(){
- const m={};
- visibleTasks().forEach(t=>{const k=monthKey(t);(m[k]??=[]).push(t)});
- return m;
+function folderItems(folderId){
+  return visibleTasks().filter(t=>Number(t.folder_id)===Number(folderId));
 }
-function folderCard(month,items){
- const status=statusFor(items),done=items.filter(t=>t.completed).length;
- const el=document.createElement("button");el.className=`folderCard status-${status}`;el.type="button";
- el.innerHTML=`<span class="folderDots">⋮</span><div class="folderIcon ${status}"></div><div class="folderName">${esc(monthLabel(month))}</div><div class="folderStats">${items.length} pekerjaan<strong>${done}/${items.length} selesai</strong></div>`;
- el.onclick=()=>openProject(month);return el;
+function folderData(){
+  const m={};
+  folders.forEach(f=>{m[String(f.id)]=folderItems(f.id)});
+  return m;
+}
+function folderCard(folder){
+  const items=folderItems(folder.id);
+  const status=items.length?statusFor(items):"red";
+  const done=items.filter(t=>t.completed).length;
+  const el=document.createElement("button");
+  el.className=`folderCard status-${status}`;
+  el.type="button";
+  el.innerHTML=`<span class="folderDots">⋮</span><div class="folderIcon ${status}"></div><div class="folderName">${esc(folder.name)}</div><div class="folderStats">${items.length} pekerjaan<strong>${done}/${items.length} selesai</strong></div>`;
+  el.onclick=()=>openProject(folder.id);
+  return el;
 }
 function renderFolders(){
- const m=folderData(),grid=$("foldersGrid");grid.innerHTML="";
- updateTaskFilterUI();
- Object.entries(m).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([month,items])=>grid.appendChild(folderCard(month,items)));
- if(!Object.keys(m).length){
-   grid.innerHTML=taskFilter==="mine"
-     ? '<div class="empty">Belum ada pekerjaan yang ditugaskan kepada kamu.</div>'
-     : '<div class="empty">Belum ada pekerjaan.</div>';
- }
+  const grid=$("foldersGrid");
+  grid.innerHTML="";
+  updateTaskFilterUI();
+  [...folders].sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||""))).forEach(f=>grid.appendChild(folderCard(f)));
+  if(!folders.length){
+    grid.innerHTML='<div class="empty">Belum ada folder. Klik ＋ Tambah Folder untuk membuat folder pertama.</div>';
+  }
 }
 document.querySelectorAll(".taskTab").forEach(btn=>{
   btn.onclick=()=>{
@@ -976,6 +968,7 @@ async function duplicateJob(items){
     project_name:t.project_name||null,
     pic:t.pic||null,
     workspace_id:currentWorkspaceId,
+    folder_id:currentFolderId,
     created_by:user.id,
     completed:false,
     completed_by:null,
@@ -1045,14 +1038,17 @@ async function deleteJobGroup(items){
   if(currentProject)openProject(currentProject);
 }
 
-function openProject(month){
-  currentProject=month;
+function openProject(folderId){
+  const folder=folders.find(f=>Number(f.id)===Number(folderId));
+  if(!folder)return;
+  currentProject=String(folder.id);
+  currentFolderId=folder.id;
   $("folderHome").classList.add("hide");
   const root=$("projectView");
   root.classList.remove("hide");
   root.classList.add("compactProjectView");
 
-  const items=(folderData()[month]||[]).slice().sort(
+  const items=folderItems(folder.id).slice().sort(
     (a,b)=>(a.task_date||"").localeCompare(b.task_date||"") ||
     String(a.batch_label||"").localeCompare(String(b.batch_label||"")) ||
     String(a.created_at||"").localeCompare(String(b.created_at||""))
@@ -1064,7 +1060,7 @@ function openProject(month){
     <div class="folderViewHead">
       <div>
         <div class="eyebrow">KERJAAN BULANAN</div>
-        <div style="font-size:24px;font-weight:850;margin-top:3px">${esc(monthLabel(month))}</div><span class="priorityBadge">Prioritas 1 — Kerjaan</span>
+        <div style="font-size:24px;font-weight:850;margin-top:3px">${esc(folder.name)}</div><span class="priorityBadge">Prioritas 1 — Kerjaan</span>
         <div class="muted" style="font-size:11px;margin-top:4px">${done}/${items.length} pekerjaan selesai · Cari & filter di bawah</div>
       </div>
       <div style="display:flex;gap:8px">
@@ -1087,7 +1083,7 @@ function openProject(month){
   `;
 
   $("backProjects").onclick=()=>closeProject();
-  if(canAdmin()) $("monthAddTask").onclick=()=>openTaskModal(`${month}-01`);
+  if(canAdmin()) $("monthAddTask").onclick=()=>openTaskModal(new Date().toISOString().slice(0,10));
 
   const groups=groupJobItems(items);
   const groupEntries=Object.entries(groups).sort((a,b)=>a[0].localeCompare(b[0]));
@@ -1228,7 +1224,7 @@ function openProject(month){
   renderMiniCards();
 }
 
-function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("projectView").classList.remove("compactProjectView");$("folderHome").classList.remove("hide");renderFolders()}
+function closeProject(){currentProject=null;currentFolderId=null;$("projectView").classList.add("hide");$("projectView").classList.remove("compactProjectView");$("folderHome").classList.remove("hide");renderFolders()}
 
 function renderTeam(){
  const box=$("teamGrid");
@@ -1346,19 +1342,56 @@ async function toggle(t){
   renderAll();
   if(currentProject) openProject(currentProject);
 }
-$("addTaskBtn").onclick=()=>{if(canAdmin())alert("Manajemen folder akan digunakan untuk membuat folder baru. Untuk menambah kerjaan, buka folder bulan terlebih dahulu.")};
+function openFolderModal(){
+  if(!canAdmin())return;
+  $("folderNameInput").value="";
+  $("folderDescriptionInput").value="";
+  $("folderErr").textContent="";
+  $("folderModal").classList.remove("hide");
+  $("folderNameInput").focus();
+}
+function closeFolderModal(){$("folderModal").classList.add("hide")}
+$("addFolderBtn").onclick=openFolderModal;
+$("folderCancel").onclick=closeFolderModal;
+$("folderModal").onclick=e=>{if(e.target.id==="folderModal")closeFolderModal()};
+$("folderSave").onclick=async()=>{
+  if(!canAdmin())return;
+  const name=$("folderNameInput").value.trim();
+  const description=$("folderDescriptionInput").value.trim();
+  $("folderErr").textContent="";
+  if(!name){$("folderErr").textContent="Nama folder wajib diisi.";return}
+
+  const btn=$("folderSave");
+  btn.disabled=true;
+  const {data,error}=await sb.from("folders").insert({
+    workspace_id:currentWorkspaceId,
+    name,
+    description:description||null,
+    color:"purple",
+    created_by:user.id
+  }).select("*").single();
+  btn.disabled=false;
+
+  if(error){
+    $("folderErr").textContent="Folder gagal dibuat: "+error.message;
+    return;
+  }
+  closeFolderModal();
+  folders=[...folders,data];
+  renderFolders();
+};
 function openTaskModal(date){
   $("newDate").value=date;
   $("newLabel").value="";
   $("newTitle").value="";
-  $("newProject").value=currentProject&&currentProject!=="Belum ditentukan"?currentProject:"";
+  $("newProject").value="";
   fillPicSelect("newPic","");
   $("taskErr").textContent="";
   $("taskModal").classList.remove("hide");
 }
 function closeTaskModal(){$("taskModal").classList.add("hide")}
 $("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
-$("taskSave").onclick=async()=>{if(!canAdmin())return;const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,workspace_id:currentWorkspaceId,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
+$("taskSave").onclick=async()=>{if(!canAdmin())return;const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,workspace_id:currentWorkspaceId,folder_id:currentFolderId,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
 
 function setPage(page){if(!canAdmin() && !["folders","calendar","team","settings"].includes(page)) page="folders";currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
@@ -1370,7 +1403,7 @@ function setPage(page){if(!canAdmin() && !["folders","calendar","team","settings
     if(page==="settings"){$("pageTitle").textContent="Settings";$("pageSub").textContent="Pengaturan akun pribadi."}
 }
 document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>{if(b.dataset.page==="folders")closeProject();setPage(b.dataset.page);window.scrollTo({top:0,behavior:"smooth"})});
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;["editModal","taskModal","agendaModal"].forEach(id=>$(id).classList.add("hide"))});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;["editModal","taskModal","agendaModal","folderModal"].forEach(id=>$(id).classList.add("hide"))});
 start();
 
 </script>
