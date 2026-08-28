@@ -203,15 +203,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 .jobMenu button:hover{background:#282531}
 .jobMenu button.danger{color:#ff777d}
 #projectView.compactProjectView .miniCardTitle{
-  padding-right:72px;
+  padding-right:32px;
 }
-.addOutputBtn{
-  position:absolute;right:42px;top:10px;
-  border:1px solid #49345f;background:#1a1422;color:#c982ff;
-  border-radius:7px;padding:4px 7px;font-size:9px;font-weight:800;
-  line-height:1;z-index:5;
-}
-.addOutputBtn:hover{background:#2a2035;color:#fff;border-color:#76509a}
 .priorityBadge{display:inline-flex;align-items:center;gap:6px;border:1px solid #4a3a62;background:#1c1626;color:#cfa9ff;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;margin-top:8px}
 .miniCardEmpty{
   grid-column:1 / -1;
@@ -496,10 +489,10 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
 <label>PIC</label><select id="editPic" class="picSelect"></select>
 <div id="editErr" class="err"></div><div class="row"><button id="editCancel" class="pill">Batal</button><button id="editSave" class="primary">Simpan</button></div></div></div>
 
-<div id="taskModal" class="modal hide"><div class="box"><h2 id="taskModalTitle" style="margin:0 0 16px">Tambah pekerjaan</h2>
+<div id="taskModal" class="modal hide"><div class="box"><h2 style="margin:0 0 16px">Tambah pekerjaan</h2>
 <label>Tanggal</label><input id="newDate" type="date">
 <label>Nama kerjaan</label><input id="newLabel" placeholder="Contoh: Perform ECKO SHOW">
-<label>Nama output</label><input id="newTitle" placeholder="Contoh: Upload TikTok">
+<label>Nama pekerjaan</label><input id="newTitle" placeholder="Contoh: Upload TikTok">
 <label>Project (opsional)</label><input id="newProject" placeholder="Contoh: MV Ecko Show">
 <label>PIC</label><select id="newPic" class="picSelect"></select>
 <div id="taskErr" class="err"></div><div class="row"><button id="taskCancel" class="pill">Batal</button><button id="taskSave" class="primary">Tambah</button></div></div></div>
@@ -1188,14 +1181,9 @@ function openProject(folderId){
   function renderMiniCards(){
     root.querySelectorAll(".miniCard,.miniCardEmpty").forEach(el=>el.remove());const search=$("projectSearch")?.value||"",filter=$("projectFilter")?.value||"all";let shown=0;
     groupEntries.forEach(([key,di])=>{if(!groupMatches(di,search,filter))return;shown++;const d=di[0],dd=di.filter(x=>x.completed).length,pct=di.length?Math.round(dd/di.length*100):0,name=jobNameOf(d);const sec=document.createElement("section");sec.className="miniCard";
-      sec.innerHTML=`<div class="miniCardHead"><h3 class="miniCardTitle">${esc(name)}</h3>${canAdmin()?'<button type="button" class="addOutputBtn" aria-label="Tambah output" title="Tambah output">＋ Output</button><button type="button" class="jobMenuBtn" aria-label="Menu kerjaan" title="Menu kerjaan">⋮</button>':""}<div class="miniCardMeta"><span>${formatDate(d.task_date)}</span><span>${dd}/${di.length} selesai</span></div><div class="miniProgress"><div class="miniProgressFill" style="width:${pct}%"></div></div></div><div class="taskCard"></div>`;
+      sec.innerHTML=`<div class="miniCardHead"><h3 class="miniCardTitle">${esc(name)}</h3>${canAdmin()?'<button type="button" class="jobMenuBtn" aria-label="Menu kerjaan" title="Menu kerjaan">⋮</button>':""}<div class="miniCardMeta"><span>${formatDate(d.task_date)}</span><span>${dd}/${di.length} selesai</span></div><div class="miniProgress"><div class="miniProgressFill" style="width:${pct}%"></div></div></div><div class="taskCard"></div>`;
       const card=sec.querySelector(".taskCard");
-      if(canAdmin()){
-  const addOutputBtn=sec.querySelector(".addOutputBtn");
-  addOutputBtn.onclick=e=>{e.preventDefault();e.stopPropagation();openTaskModal(d.task_date,name)};
-  const menuBtn=sec.querySelector(".jobMenuBtn");
-  menuBtn.onclick=e=>{e.preventDefault();e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const menu=document.createElement("div");menu.className="jobMenu";menu.innerHTML='<button type="button" data-act="dup">Duplicate</button><button type="button" data-act="edit">Edit nama & tanggal</button><button type="button" data-act="del" class="danger">Hapus</button>';sec.appendChild(menu);menu.querySelector('[data-act="dup"]').onclick=e=>{e.stopPropagation();menu.remove();duplicateJob(di)};menu.querySelector('[data-act="edit"]').onclick=e=>{e.stopPropagation();menu.remove();openJobEdit(di)};menu.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();menu.remove();deleteJobGroup(di)}}
-}
+      if(canAdmin()){const menuBtn=sec.querySelector(".jobMenuBtn");menuBtn.onclick=e=>{e.preventDefault();e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const menu=document.createElement("div");menu.className="jobMenu";menu.innerHTML='<button type="button" data-act="dup">Duplicate</button><button type="button" data-act="edit">Edit nama & tanggal</button><button type="button" data-act="del" class="danger">Hapus</button>';sec.appendChild(menu);menu.querySelector('[data-act="dup"]').onclick=e=>{e.stopPropagation();menu.remove();duplicateJob(di)};menu.querySelector('[data-act="edit"]').onclick=e=>{e.stopPropagation();menu.remove();openJobEdit(di)};menu.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();menu.remove();deleteJobGroup(di)}}}
       di.forEach(t=>{const row=document.createElement("div");row.className="task";row.innerHTML=`<button class="check ${t.completed?"done":""}" aria-label="${t.completed?"Batalkan":"Selesaikan"}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}</div></div>${canAdmin()?'<div class="actions"><button class="actionBtn editBtn" title="Edit output">✎</button><button class="actionBtn deleteBtn" title="Hapus output">×</button></div>':""}`;row.querySelector(".check").onclick=()=>toggle(t);if(canAdmin()){row.querySelector(".editBtn").onclick=()=>openEdit(t);row.querySelector(".deleteBtn").onclick=()=>deleteTask(t)}card.appendChild(row)});root.appendChild(sec)});
     if(!shown){const empty=document.createElement("div");empty.className="miniCardEmpty";empty.textContent="Belum ada kerjaan di folder ini / tidak ada yang cocok dengan filter.";root.appendChild(empty)}
   }
@@ -1349,19 +1337,29 @@ $("editSave").onclick=async()=>{if(!canAdmin())return;if(!editingTask)return;con
 async function deleteTask(t){if(!canAdmin())return;if(!confirm(`Hapus pekerjaan "${t.title}"?`))return;const {error}=await sb.from("tasks").delete().eq("id",t.id);if(error)alert(error.message);else await loadTasks()}
 async function toggle(t){
   const next=!Boolean(t.completed);
-  const {data,error}=await sb.rpc("toggle_task_checklist",{
-    target_task_id:t.id,
-    new_completed:next
-  });
-  if(error){
-    alert("Checklist gagal disimpan: "+error.message);
-    return;
-  }
+  const previous={completed:Boolean(t.completed),completed_by:t.completed_by||null,completed_at:t.completed_at||null};
+
+  // Optimistic UI: update the clicked output immediately, then persist to Supabase.
   t.completed=next;
   t.completed_by=next?user.id:null;
   t.completed_at=next?new Date().toISOString():null;
   renderAll();
   if(currentProject) openProject(currentProject);
+
+  const {error}=await sb.rpc("toggle_task_checklist",{
+    target_task_id:t.id,
+    new_completed:next
+  });
+
+  if(error){
+    // Roll back only when the database update fails.
+    t.completed=previous.completed;
+    t.completed_by=previous.completed_by;
+    t.completed_at=previous.completed_at;
+    renderAll();
+    if(currentProject) openProject(currentProject);
+    alert("Checklist gagal disimpan: "+error.message);
+  }
 }
 
 function openTaskModal(date){
@@ -1410,36 +1408,13 @@ $("folderSave").onclick=async()=>{
   if(editingFolder){folders=folders.map(f=>f.id===editingFolder.id?{...f,name,description:description||null}:f);}else if(result.data)folders.push(result.data);
   closeFolderModal();renderFolders();
 };
-let taskModalOutputMode=false;
-function openTaskModal(date, existingJobName=null){
+function openTaskModal(date){
   if(!canAdmin()||!currentProject){alert("Buat dan buka folder terlebih dahulu sebelum menambah kerjaan.");return;}
-  taskModalOutputMode=!!existingJobName;
-  $("taskModalTitle").textContent=taskModalOutputMode?"Tambah output":"Tambah pekerjaan";
-  $("taskSave").textContent=taskModalOutputMode?"Tambah Output":"Tambah";
-  $("newDate").value=date;
-  $("newLabel").value=existingJobName||"";
-  $("newLabel").readOnly=taskModalOutputMode;
-  $("newTitle").value="";
-  $("newProject").value="";
-  fillPicSelect("newPic","");
-  $("taskErr").textContent="";
-  $("taskModal").classList.remove("hide");
-  $("newTitle").focus();
+  $("newDate").value=date;$("newLabel").value="";$("newTitle").value="";$("newProject").value="";fillPicSelect("newPic","");$("taskErr").textContent="";$("taskModal").classList.remove("hide");$("newTitle").focus();
 }
-function closeTaskModal(){$("taskModal").classList.add("hide");taskModalOutputMode=false;$("newLabel").readOnly=false}
+function closeTaskModal(){$("taskModal").classList.add("hide")}
 $("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
-$("taskSave").onclick=async()=>{
-  if(!canAdmin())return;
-  if(!currentProject){$("taskErr").textContent="Buka folder terlebih dahulu.";return}
-  const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();
-  if(!date||!label||!title){$("taskErr").textContent="Tanggal, nama kerjaan, dan nama output wajib diisi.";return}
-  const {error}=await sb.from("tasks").insert({
-    task_date:date,batch_label:label,title,project_name:project||null,pic:pic||null,
-    workspace_id:currentWorkspaceId,folder_id:currentProject,created_by:user.id
-  });
-  if(error)$("taskErr").textContent=error.message;
-  else{closeTaskModal();await loadTasks();openProject(currentProject)}
-}
+$("taskSave").onclick=async()=>{if(!canAdmin())return;if(!currentProject){$("taskErr").textContent="Buka folder terlebih dahulu.";return}const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,workspace_id:currentWorkspaceId,folder_id:currentProject,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks();openProject(currentProject)}}
 
 
 document.querySelectorAll(".historyTab").forEach(btn=>btn.onclick=async()=>{historyFilter=btn.dataset.historyFilter||"trash";await renderHistory()});
