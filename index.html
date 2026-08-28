@@ -518,6 +518,7 @@ const SUPABASE_ANON_KEY="sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
 // Production URL — digunakan untuk redirect aktivasi/invite agar tidak pernah kembali ke localhost.
 const APP_URL="https://p3nabi-studio.vercel.app";
 let sb,user,tasks=[],profiles=[],agendas=[],realtimeChannel=null,currentPage="dashboard",currentProject=null;
+const pendingToggleIds=new Set();
 let isSuperAdmin=false;
 let workspaceList=[],workspaceMembers=[],currentWorkspace=null,currentWorkspaceId=null,folders=[];
 let workspaceRole=null;
@@ -623,13 +624,18 @@ async function selectWorkspace(id){
  const w=workspaceList.find(x=>x.id===id);
  const m=workspaceMembers.find(x=>x.workspace_id===id&&x.user_id===user.id);
  if(!w||!m)return;
+
  currentWorkspace=w;
  currentWorkspaceId=id;
  workspaceRole=m.role;
  localStorage.setItem(CURRENT_WS_KEY,id);
+
  hideWorkspaceChooser();
  showApp();
  setWorkspaceUI();
+
+ // Refresh the selected workspace membership before loading Team profiles.
+ await loadCurrentWorkspaceMembers();
  await loadAll();
 }
 async function enterWorkspaceFlow(){
@@ -850,11 +856,24 @@ $("workspaceLogout").onclick=async()=>{
 $("switchWorkspace").onclick=async()=>{await loadWorkspaceContext();showWorkspaceChooser()};
 
 async function loadCurrentWorkspaceMembers(){
- if(!currentWorkspaceId)return;
- const r=await sb.from("workspace_members").select("workspace_id,user_id,role").eq("workspace_id",currentWorkspaceId);
- if(!r.error){
-   workspaceMembers=workspaceMembers.filter(m=>m.workspace_id!==currentWorkspaceId).concat(r.data||[]);
+ if(!currentWorkspaceId)return false;
+
+ const r=await sb
+   .from("workspace_members")
+   .select("workspace_id,user_id,role")
+   .eq("workspace_id",currentWorkspaceId);
+
+ if(r.error){
+   console.error("Team members load error:",r.error);
+   return false;
  }
+
+ // Replace only the membership cache for the active workspace.
+ workspaceMembers=workspaceMembers
+   .filter(m=>m.workspace_id!==currentWorkspaceId)
+   .concat(r.data||[]);
+
+ return true;
 }
 async function loadAll(){
  await ensureProfile();
@@ -929,14 +948,57 @@ async function restoreFolder(folderId){
 
 async function loadTasks(){
   const r=await sb.from("tasks").select("*").eq("workspace_id",currentWorkspaceId).order("task_date").order("created_at");
-  if(!r.error){tasks=r.data||[];renderAll()}
+  if(!r.error){
+    const fresh=r.data||[];
+    // Jangan menimpa status yang sedang diubah secara optimistik oleh realtime refresh.
+    const oldById=new Map(tasks.map(x=>[String(x.id),x]));
+    fresh.forEach(x=>{
+      if(pendingToggleIds.has(String(x.id))){
+        const old=oldById.get(String(x.id));
+        if(old){x.completed=old.completed;x.completed_by=old.completed_by;x.completed_at=old.completed_at;}
+      }
+    });
+    tasks=fresh;
+    renderAll();
+  }
 }
 async function loadProfiles(){
-  const ids=workspaceMembers.filter(m=>m.workspace_id===currentWorkspaceId).map(m=>m.user_id);
-  const r=ids.length
-    ? await sb.from("profiles").select("*").in("id",ids).order("username")
-    : {data:[],error:null};
-  if(!r.error){profiles=r.data||[];isSuperAdmin=canAdmin();renderAll();renderSettings();if(!$("editModal").classList.contains("hide")&&editingTask)fillPicSelect("editPic",(editingTask.pic||"").trim());}
+  const ids=[...new Set(
+    workspaceMembers
+      .filter(m=>m.workspace_id===currentWorkspaceId)
+      .map(m=>m.user_id)
+      .filter(Boolean)
+  )];
+
+  if(!ids.length){
+    profiles=[];
+    isSuperAdmin=canAdmin();
+    renderTeam();
+    renderSettings();
+    return;
+  }
+
+  const r=await sb
+    .from("profiles")
+    .select("*")
+    .in("id",ids)
+    .order("username");
+
+  if(r.error){
+    console.error("Team profiles load error:",r.error);
+    return;
+  }
+
+  profiles=r.data||[];
+  isSuperAdmin=canAdmin();
+
+  renderTeam();
+  renderAll();
+  renderSettings();
+
+  if(!$("editModal").classList.contains("hide")&&editingTask){
+    fillPicSelect("editPic",(editingTask.pic||"").trim());
+  }
 }
 async function loadAgendas(){
   const r=await sb.from("agendas").select("*").order("agenda_date").order("agenda_time");
@@ -1069,19 +1131,35 @@ function groupJobItems(items){
 
 async function duplicateJob(items){
   if(!canAdmin()||!items?.length)return;
-  const date=prompt("Tanggal baru (YYYY-MM-DD)",items[0].task_date);
+
+  // SOURCE SNAPSHOT: source tasks are never modified during duplication.
+  const sourceItems=items.map(t=>({
+    id:t.id,
+    task_date:t.task_date,
+    batch_label:t.batch_label||null,
+    title:t.title,
+    project_name:t.project_name||null,
+    pic:t.pic||null,
+    source_url:t.source_url||null
+  }));
+
+  const date=prompt("Tanggal baru (YYYY-MM-DD)",sourceItems[0].task_date);
   if(!date)return;
+
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){
     alert("Format tanggal harus YYYY-MM-DD.");
     return;
   }
 
-  const payload=items.map(t=>({
+  // Create completely new database rows.
+  // The source rows are READ ONLY and are never updated/reset.
+  const payload=sourceItems.map(t=>({
     task_date:date,
-    batch_label:t.batch_label||null,
+    batch_label:t.batch_label,
     title:t.title,
-    project_name:t.project_name||null,
-    pic:t.pic||null,
+    project_name:t.project_name,
+    pic:t.pic,
+    source_url:t.source_url,
     workspace_id:currentWorkspaceId,
     folder_id:currentProject,
     created_by:user.id,
@@ -1090,9 +1168,30 @@ async function duplicateJob(items){
     completed_at:null
   }));
 
-  const {error}=await sb.from("tasks").insert(payload);
-  if(error){alert(error.message);return}
+  const sourceIds=new Set(sourceItems.map(t=>String(t.id)));
 
+  const {data:inserted,error}=await sb
+    .from("tasks")
+    .insert(payload)
+    .select("id,task_date,batch_label,title,folder_id,workspace_id,completed");
+
+  if(error){
+    alert("Duplicate gagal: "+error.message);
+    return;
+  }
+
+  // Safety guard: the database must generate brand-new IDs.
+  const reusedSourceId=(inserted||[]).some(t=>sourceIds.has(String(t.id)));
+  if(reusedSourceId){
+    console.error("Duplicate safety check failed: source ID reused",{
+      sourceIds:[...sourceIds],
+      inserted
+    });
+    alert("Duplicate dibatalkan karena ID pekerjaan sumber terdeteksi terpakai.");
+    return;
+  }
+
+  // Supabase is the source of truth after duplication.
   await loadTasks();
   if(currentProject)openProject(currentProject);
 }
@@ -1338,28 +1437,70 @@ async function deleteTask(t){if(!canAdmin())return;if(!confirm(`Hapus pekerjaan 
 async function toggle(t){
   const next=!Boolean(t.completed);
   const previous={completed:Boolean(t.completed),completed_by:t.completed_by||null,completed_at:t.completed_at||null};
+  const id=String(t.id);
+  pendingToggleIds.add(id);
 
-  // Optimistic UI: update the clicked output immediately, then persist to Supabase.
+  // Update object + DOM immediately. Tidak menunggu Supabase.
   t.completed=next;
   t.completed_by=next?user.id:null;
   t.completed_at=next?new Date().toISOString():null;
-  renderAll();
-  if(currentProject) openProject(currentProject);
+  updateTaskRowUI(t);
+  updateMiniCardUI(t);
+  renderDashboard();
+  renderFolders();
 
   const {error}=await sb.rpc("toggle_task_checklist",{
     target_task_id:t.id,
     new_completed:next
   });
 
+  pendingToggleIds.delete(id);
   if(error){
-    // Roll back only when the database update fails.
     t.completed=previous.completed;
     t.completed_by=previous.completed_by;
     t.completed_at=previous.completed_at;
-    renderAll();
-    if(currentProject) openProject(currentProject);
+    updateTaskRowUI(t);
+    updateMiniCardUI(t);
+    renderDashboard();
+    renderFolders();
     alert("Checklist gagal disimpan: "+error.message);
+    return;
   }
+
+  // Sinkronisasi final setelah server mengonfirmasi perubahan.
+  await loadTasks();
+  if(currentProject) openProject(currentProject);
+}
+
+function updateTaskRowUI(t){
+  const rows=document.querySelectorAll('.task');
+  rows.forEach(row=>{
+    const btn=row.querySelector('.check');
+    if(!btn)return;
+    const title=row.querySelector('.title');
+    const titleText=(title?.firstChild?.textContent||'').trim();
+    if(titleText!==String(t.title||'').trim())return;
+    btn.classList.toggle('done',Boolean(t.completed));
+    btn.setAttribute('aria-label',t.completed?'Batalkan':'Selesaikan');
+    title.classList.toggle('doneText',Boolean(t.completed));
+  });
+}
+
+function updateMiniCardUI(t){
+  const name=jobNameOf(t);
+  document.querySelectorAll('.miniCard').forEach(card=>{
+    const title=card.querySelector('.miniCardTitle');
+    if(!title || title.textContent.trim()!==name)return;
+    const related=tasks.filter(x=>jobNameOf(x)===name);
+    const done=related.filter(x=>x.completed).length;
+    const meta=card.querySelector('.miniCardMeta');
+    if(meta){
+      const spans=meta.querySelectorAll('span');
+      if(spans[1])spans[1].textContent=`${done}/${related.length} selesai`;
+    }
+    const fill=card.querySelector('.miniProgressFill');
+    if(fill)fill.style.width=(related.length?Math.round(done/related.length*100):0)+'%';
+  });
 }
 
 function openTaskModal(date){
