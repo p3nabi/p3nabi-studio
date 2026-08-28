@@ -31,7 +31,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 .legend{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;align-items:center;gap:12px;border:1px solid var(--line);background:#111118;border-radius:16px;padding:14px 18px;margin-top:16px}.legendTitle{font-size:11px;text-transform:uppercase;color:#aaa6b3;letter-spacing:.5px}.legendItem{display:flex;align-items:center;gap:8px;font-size:11px;color:#b0acb7}.legendItem b{color:#f3f0f6;display:block;font-size:11px}.legendFolder{width:26px;height:18px;border-radius:3px;position:relative}.legendFolder:before{content:"";position:absolute;left:2px;top:-5px;width:12px;height:6px;border-radius:3px 3px 0 0}.legendFolder.red{background:#ed3038}.legendFolder.red:before{background:#ff4b50}.legendFolder.orange{background:#ef9108}.legendFolder.orange:before{background:#ffb42d}.legendFolder.green{background:#48bd28}.legendFolder.green:before{background:#69dc37}
 .folderGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.folderCard{position:relative;border:1px solid var(--line);background:linear-gradient(145deg,#15151d,#101016);border-radius:18px;padding:22px;min-height:185px;text-align:left;color:#fff;transition:.16s}.folderCard:hover{transform:translateY(-2px);border-color:#3a3445}.folderIcon{width:108px;height:74px;border-radius:9px;position:relative;margin:0 0 22px;box-shadow:inset 0 -7px 0 rgba(0,0,0,.13),0 12px 24px rgba(0,0,0,.2)}.folderIcon:before{content:"";position:absolute;left:7px;top:-13px;width:45px;height:18px;border-radius:8px 8px 0 0}.folderIcon.red{background:linear-gradient(#ff4b50,#e5222a)}.folderIcon.red:before{background:#ff4b50}.folderIcon.orange{background:linear-gradient(#ffb42d,#ec8c00)}.folderIcon.orange:before{background:#ffb42d}.folderIcon.green{background:linear-gradient(#69dc37,#3fb71f)}.folderIcon.green:before{background:#69dc37}.folderName{font-size:17px;font-weight:800}.folderStats{color:#8f8b98;font-size:12px;margin-top:5px}.folderStats strong{display:block;margin-top:7px}.status-red .folderStats strong{color:var(--red)}.status-orange .folderStats strong{color:var(--orange)}.status-green .folderStats strong{color:var(--green)}.folderDots{position:absolute;right:15px;top:13px;color:#aaa;font-size:20px}
 .folderViewHead{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px}.backBtn,.secondary{border:1px solid var(--line);background:#14141b;color:#ddd;border-radius:9px;padding:9px 12px}.monthPanel{border:1px solid var(--line);background:#121219;border-radius:18px;overflow:hidden}.monthHeader{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}.monthFolder{width:30px;height:22px;border-radius:4px;position:relative}.monthFolder:before{content:"";position:absolute;left:2px;top:-5px;width:13px;height:7px;border-radius:3px 3px 0 0}.monthFolder.red{background:#ed3038}.monthFolder.red:before{background:#ff4b50}.monthFolder.orange{background:#ef9108}.monthFolder.orange:before{background:#ffb42d}.monthFolder.green{background:#48bd28}.monthFolder.green:before{background:#69dc37}.monthName{font-weight:800;font-size:17px}.monthMeta{margin-left:auto;color:#8f8b98;font-size:11px}.day{padding:18px 18px 0}.dateLine{display:flex;justify-content:space-between;align-items:center}.date{font-size:18px;margin:0 0 9px}.dateMeta{font-size:11px;color:#85818d}.taskCard{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#17171f}.task{display:flex;align-items:center;gap:12px;padding:13px;border-bottom:1px solid #292833}.task:last-child{border-bottom:0}.check{width:25px;height:25px;border-radius:50%;border:2px solid #6c6974;background:transparent;display:grid;place-items:center;color:#fff;flex:0 0 auto}.check.done{border-color:#9d55ff;background:#9d55ff}.check.done:after{content:"✓";font-size:15px;font-weight:900}.title{font-size:13px;font-weight:650;flex:1}.doneText{text-decoration:line-through;color:#77737f}.taskSub{font-size:10px;color:#77737f;margin-top:4px}.actions{display:flex;gap:4px}.actionBtn{border:0;background:transparent;color:#77737f;padding:6px 7px;border-radius:7px}.actionBtn:hover{background:#25242e;color:#fff}.deleteBtn:hover{color:#ff5a62}.add{width:100%;border:1px dashed #4a385c;background:#111019;color:#bb7cff;border-radius:13px;padding:13px;margin-top:14px}
-.teamGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.teamCard{padding:18px}.teamTop{display:flex;align-items:center;gap:12px}.teamTop .avatar{width:48px;height:48px}.teamCard h3{margin:0;font-size:15px}.teamCard .job{color:#aaa6b3;font-size:11px;margin-top:4px}.teamStats{display:flex;gap:8px;margin-top:16px}.teamStat{flex:1;background:#171720;border:1px solid #292735;border-radius:10px;padding:10px}.teamStat b{display:block;font-size:17px}.teamStat small{color:#85818d;font-size:9px}
+.teamGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.teamCard{padding:18px}.teamActions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.teamRole{font-size:10px;color:#85818d;border:1px solid #302d3a;border-radius:999px;padding:5px 8px}.teamRole.admin{color:#c67cff;border-color:#5a3b78;background:#21172d}.teamRole.head{color:#7dd3fc;border-color:#31536a;background:#12202a}.teamRole.employee{color:#aaa6b3}.memberRemove{margin-left:auto}.memberFormGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.memberFormGrid .full{grid-column:1/-1}.modal .box{max-width:520px}.teamTop{display:flex;align-items:center;gap:12px}.teamTop .avatar{width:48px;height:48px}.teamCard h3{margin:0;font-size:15px}.teamCard .job{color:#aaa6b3;font-size:11px;margin-top:4px}.teamStats{display:flex;gap:8px;margin-top:16px}.teamStat{flex:1;background:#171720;border:1px solid #292735;border-radius:10px;padding:10px}.teamStat b{display:block;font-size:17px}.teamStat small{color:#85818d;font-size:9px}
 .calendarTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.calendarNav{display:flex;gap:6px}.calBtn{border:1px solid var(--line);background:#14141b;color:#ddd;border-radius:9px;width:36px;height:36px}.calendar{border:1px solid var(--line);background:#111119;border-radius:18px;overflow:hidden}.calHeader{padding:18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.calMonthTitle{font-size:20px;font-weight:850}.calGrid{display:grid;grid-template-columns:repeat(7,1fr)}.weekday{padding:10px 8px;text-align:center;color:#77737f;font-size:10px;text-transform:uppercase}.calDay{min-height:88px;border-top:1px solid #24232d;border-right:1px solid #24232d;padding:8px;position:relative;background:#111119;color:#d9d5df}.calDay:nth-child(7n){border-right:0}.calDay.mutedDay{color:#5f5c67;background:#0e0e14}.calDay.today .dayNum{background:#9d55ff;color:white}.calDay.selected{box-shadow:inset 0 0 0 2px #9d55ff}.dayNum{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}.dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:8px}.dot{width:5px;height:5px;border-radius:50%;background:#a95cff}.taskDot{background:#ff9f19}.agendaDot{background:#5da9ff}.moreDot{font-size:9px;color:#777}.agendaPanel{margin-top:14px;border:1px solid var(--line);background:#111119;border-radius:18px;padding:18px}.agendaHead{display:flex;align-items:center;justify-content:space-between}.agendaDate{font-size:17px;font-weight:800}.agendaList{margin-top:13px;display:flex;flex-direction:column;gap:8px}.agendaItem{display:flex;gap:12px;align-items:flex-start;background:#171720;border:1px solid #292735;border-radius:12px;padding:11px}.agendaTime{font-size:11px;color:#b975ff;min-width:52px}.agendaTitle{font-size:12px;font-weight:700}.agendaNote{font-size:10px;color:#85818d;margin-top:3px}
 .settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.settingsCard{padding:20px}.profilePreview{display:flex;align-items:center;gap:15px;margin-bottom:18px}.profilePreview .avatar{width:72px;height:72px;font-size:18px}.uploadLabel{display:inline-block;border:1px solid var(--line);background:#171720;color:#eee;border-radius:9px;padding:8px 10px;font-size:11px;cursor:pointer}.uploadLabel input{display:none}.formGroup{margin-top:13px}.formGroup label{display:block;font-size:11px;color:#aaa6b3;margin-bottom:5px}input,select,textarea{width:100%;padding:11px 12px;border:1px solid #302d3a;border-radius:10px;background:#0f0f15;color:#fff;outline:none}textarea{resize:vertical;min-height:90px}input:focus,select:focus,textarea:focus{border-color:#8d4de0}.saveBtn{border:0;background:linear-gradient(90deg,#8f47ff,#b36bff);color:#fff;border-radius:10px;padding:11px 14px;font-weight:800}.dangerBtn{border:1px solid #4a252a;background:#211215;color:#ff8a91;border-radius:10px;padding:11px 14px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.66);backdrop-filter:blur(8px);display:grid;place-items:center;padding:20px;z-index:30}.modal .box{width:min(480px,100%);background:#15151d;border:1px solid #302d3a;border-radius:18px;padding:22px;box-shadow:0 30px 90px rgba(0,0,0,.5)}label{font-size:12px;color:#b4b0ba}.row{display:flex;gap:8px;margin-top:10px}.row button{flex:1}.pill{border:1px solid var(--line);background:#181820;color:#eee;border-radius:10px;padding:11px}.primary{border:0;background:linear-gradient(90deg,#8f47ff,#b36bff);color:#fff;border-radius:10px;padding:11px;font-weight:800}.err{color:#ff7b82;font-size:12px;margin:6px 0}.empty{padding:25px;text-align:center;color:#77737f}
@@ -202,10 +202,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 }
 .jobMenu button:hover{background:#282531}
 .jobMenu button.danger{color:#ff777d}
-.folderMenu{position:absolute;right:10px;top:42px;z-index:30;min-width:175px;background:#1a1922;border:1px solid #373341;border-radius:11px;padding:5px;box-shadow:0 18px 45px rgba(0,0,0,.45)}
-.folderMenu button{display:block;width:100%;border:0;background:transparent;color:#e8e5ed;text-align:left;padding:9px 10px;border-radius:7px;font-size:12px}
-.folderMenu button:hover{background:#282531}.folderMenu button.danger{color:#ff777d}
-.folderCard{overflow:visible}.folderCard .folderDots{z-index:5;border:0;background:transparent;padding:0;width:28px;height:28px;display:grid;place-items:center;border-radius:8px}.folderCard .folderDots:hover{background:#272531;color:#fff}
 #projectView.compactProjectView .miniCardTitle{
   padding-right:32px;
 }
@@ -304,8 +300,12 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
 .priorityBadge{border-color:color-mix(in srgb,var(--accent) 45%,#4a3a62);background:color-mix(in srgb,var(--accent) 10%,#1c1626);color:var(--accent2)}
 @media(max-width:700px){.workspaceGrid{grid-template-columns:1fr}}
 
-.historyItem b{font-size:12px}.historyItem .muted{font-size:11px;color:var(--muted)}
-.restoreBtn{font-size:11px!important}
+.folderMenu{position:absolute;right:10px;top:42px;z-index:30;min-width:175px;background:#1a1922;border:1px solid #373341;border-radius:11px;padding:5px;box-shadow:0 18px 45px rgba(0,0,0,.45)}
+.folderMenu button{display:block;width:100%;border:0;background:transparent;color:#e8e5ed;text-align:left;padding:9px 10px;border-radius:7px;font-size:12px}
+.folderMenu button:hover{background:#282531}.folderMenu button.danger{color:#ff777d}
+.folderCard{overflow:visible}.folderCard .folderDots{z-index:5;border:0;background:transparent;padding:0;width:28px;height:28px;display:grid;place-items:center;border-radius:8px}.folderCard .folderDots:hover{background:#272531;color:#fff}
+
+.historyTabs{display:flex;gap:8px;margin:0 0 14px}.historyTab{border:1px solid var(--line);background:#14141b;color:#aaa6b3;border-radius:10px;padding:9px 14px;cursor:pointer}.historyTab.active{color:#fff;background:#24202c;border-color:#4a3a5a}.historyGrid{display:grid;gap:10px}.historyItem{border:1px solid var(--line);background:#121219;border-radius:14px;padding:15px 16px;display:flex;align-items:center;gap:14px}.historyIcon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#24202c;font-size:18px;flex:0 0 auto}.historyMain{min-width:0;flex:1}.historyTitle{font-weight:800}.historyMeta{font-size:11px;color:#85818d;margin-top:4px}.historyAction{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#aaa6b3;margin-bottom:4px}.historyEmpty{border:1px dashed #393441;border-radius:14px;padding:28px;text-align:center;color:#77737f}
 </style>
 </head>
 <body>
@@ -429,20 +429,14 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
     </section>
 
     <section id="page-team" class="page">
-      <div class="sectionHead"><div><h2>Team</h2><p>Daftar anggota tim dan jobdesk masing-masing.</p></div></div>
+      <div class="sectionHead"><div><h2>Team</h2><p>Daftar anggota tim dan jobdesk masing-masing.</p></div><button class="primary adminOnly" id="addMemberBtn">＋ Tambah Anggota</button></div>
       <div id="teamGrid" class="teamGrid"></div>
     </section>
 
     <section id="page-history" class="page">
-      <div class="sectionHead"><div><h2>History</h2><p>Riwayat aktivitas dan folder yang masuk ke sampah workspace ini.</p></div><button id="refreshHistory" class="pill">↻ Refresh</button></div>
-      <div class="panel" style="padding:0;overflow:hidden">
-        <div style="padding:16px 18px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button class="taskTab historyTab active" data-history-filter="all">Semua</button>
-          <button class="taskTab historyTab" data-history-filter="folder">Folder</button>
-          <button class="taskTab historyTab" data-history-filter="activity">Aktivitas</button>
-        </div>
-        <div id="historyList" style="padding:10px 18px 18px"></div>
-      </div>
+      <div class="sectionHead"><div><h2>History</h2><p>Riwayat aktivitas dan folder yang masuk Sampah di workspace ini.</p></div></div>
+      <div class="historyTabs"><button class="historyTab active" data-history-filter="trash">Sampah</button><button class="historyTab" data-history-filter="activity">Aktivitas</button></div>
+      <div id="historyContent"></div>
     </section>
 
     <section id="page-settings" class="page">
@@ -467,6 +461,19 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
     </section>
   </div></main>
 </div>
+
+<div id="memberModal" class="modal hide"><div class="box">
+<h2 style="margin:0 0 6px">Tambah Anggota</h2>
+<p class="muted" style="font-size:12px;line-height:1.5;margin:0 0 16px">Tambahkan user yang sudah terdaftar di Supabase Auth ke workspace yang sedang aktif.</p>
+<div class="memberFormGrid">
+  <div class="full"><label>Email</label><input id="memberEmail" type="email" placeholder="nama@email.com"></div>
+  <div><label>Username</label><input id="memberUsername" placeholder="Username"></div>
+  <div><label>Jobdesk</label><input id="memberJobdesk" placeholder="Contoh: Team Content"></div>
+  <div><label>Role</label><select id="memberRole"><option value="employee">Employee</option><option value="head">Head</option><option value="super_admin">Super Admin</option></select></div>
+</div>
+<div id="memberErr" class="err"></div>
+<div class="row"><button id="memberCancel" class="pill">Batal</button><button id="memberSave" class="primary">Tambah Anggota</button></div>
+</div></div>
 
 <div id="jobEditModal" class="modal hide"><div class="box">
 <h2 style="margin:0 0 16px">Edit kerjaan</h2>
@@ -512,8 +519,7 @@ const SUPABASE_ANON_KEY="sb_publishable_oPuBaY7vrTYHaNGsq0a0Uw_QWHe8ke6";
 const APP_URL="https://p3nabi-studio.vercel.app";
 let sb,user,tasks=[],profiles=[],agendas=[],realtimeChannel=null,currentPage="dashboard",currentProject=null;
 let isSuperAdmin=false;
-let workspaceList=[],workspaceMembers=[],currentWorkspace=null,currentWorkspaceId=null,folders=[],historyRows=[];
-let historyFilter="all";
+let workspaceList=[],workspaceMembers=[],currentWorkspace=null,currentWorkspaceId=null,folders=[];
 let workspaceRole=null;
 let activationMode=false;
 let taskFilter="all";
@@ -542,8 +548,7 @@ function workspaceRoleOf(id=currentWorkspaceId){
  return m?.role||null;
 }
 function currentWorkspaceAdmin(){
- return (user?.email||"").toLowerCase()==="haniffabaz@gmail.com" ||
-   workspaceRole==="super_admin";
+ return workspaceRole==="super_admin";
 }
 function initialsWorkspace(name){return initials(name||"WS")}
 function workspaceColor(w){
@@ -844,16 +849,25 @@ $("workspaceLogout").onclick=async()=>{
 };
 $("switchWorkspace").onclick=async()=>{await loadWorkspaceContext();showWorkspaceChooser()};
 
+async function loadCurrentWorkspaceMembers(){
+ if(!currentWorkspaceId)return;
+ const r=await sb.from("workspace_members").select("workspace_id,user_id,role").eq("workspace_id",currentWorkspaceId);
+ if(!r.error){
+   workspaceMembers=workspaceMembers.filter(m=>m.workspace_id!==currentWorkspaceId).concat(r.data||[]);
+ }
+}
 async function loadAll(){
- await ensureProfile();await Promise.all([loadFolders(),loadTasks(),loadProfiles(),loadAgendas(),loadHistory()]);
+ await ensureProfile();
+ await loadCurrentWorkspaceMembers();
+ await Promise.all([loadFolders(),loadTasks(),loadProfiles(),loadAgendas(),loadHistory()]);
  renderAll();renderCalendar();renderSettings();
  if(!realtimeChannel){
   realtimeChannel=sb.channel("workspace-live")
    .on("postgres_changes",{event:"*",schema:"public",table:"tasks"},loadTasks)
    .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},loadProfiles)
    .on("postgres_changes",{event:"*",schema:"public",table:"agendas"},loadAgendas)
-   .on("postgres_changes",{event:"*",schema:"public",table:"folders"},async()=>{await loadFolders();await loadHistory();renderFolders()})
-   .on("postgres_changes",{event:"*",schema:"public",table:"history"},loadHistory)
+   .on("postgres_changes",{event:"*",schema:"public",table:"folders"},async()=>{await loadFolders();await loadHistory();renderFolders();renderHistory();})
+   .on("postgres_changes",{event:"*",schema:"public",table:"history"},async()=>{await loadHistory();renderHistory();})
    .subscribe();
  }
 }
@@ -868,6 +882,44 @@ async function loadFolders(){
   const r=await sb.from("folders").select("*").eq("workspace_id",currentWorkspaceId).is("deleted_at",null).order("created_at");
   if(!r.error){folders=r.data||[];}
 }
+async function loadHistory(){
+  if(!currentWorkspaceId)return;
+  const r=await sb.from("history").select("*").eq("workspace_id",currentWorkspaceId).order("created_at",{ascending:false}).limit(100);
+  if(!r.error){historyRows=r.data||[];renderHistory();}
+}
+function historyDate(v){return v?new Date(v).toLocaleString("id-ID",{dateStyle:"medium",timeStyle:"short"}):""}
+let historyRows=[];
+let historyFilter="trash";
+function renderHistory(){
+  const box=$("historyContent"); if(!box)return; box.innerHTML="";
+  document.querySelectorAll(".historyTab").forEach(b=>b.classList.toggle("active",b.dataset.historyFilter===historyFilter));
+  if(historyFilter==="trash") {
+    const deleted=historyRows.filter(h=>h.item_type==="folder" && h.action==="delete");
+    if(!deleted.length){box.innerHTML='<div class="historyEmpty">Belum ada folder di Sampah workspace ini.</div>';return;}
+    const grid=document.createElement("div");grid.className="historyGrid";
+    deleted.forEach(h=>{
+      const el=document.createElement("div");el.className="historyItem";
+      el.innerHTML=`<div class="historyIcon">🗑️</div><div class="historyMain"><div class="historyAction">Folder dihapus</div><div class="historyTitle">${esc(h.item_name||"Folder")}</div><div class="historyMeta">${historyDate(h.created_at)}</div></div>${canAdmin()?'<button class="secondary restoreFolderBtn" type="button">↩ Pulihkan</button>':""}`;
+      const btn=el.querySelector(".restoreFolderBtn"); if(btn)btn.onclick=()=>restoreFolder(h.item_id);
+      grid.appendChild(el);
+    });
+    box.appendChild(grid);
+  } else {
+    if(!historyRows.length){box.innerHTML='<div class="historyEmpty">Belum ada aktivitas di workspace ini.</div>';return;}
+    const grid=document.createElement("div");grid.className="historyGrid";
+    historyRows.forEach(h=>{const el=document.createElement("div");el.className="historyItem";el.innerHTML=`<div class="historyIcon">${h.action==="delete"?"🗑️":h.action==="restore"?"↩️":"•"}</div><div class="historyMain"><div class="historyAction">${esc(h.action||"Aktivitas")} · ${esc(h.item_type||"")}</div><div class="historyTitle">${esc(h.item_name||"Tanpa nama")}</div><div class="historyMeta">${historyDate(h.created_at)}</div></div>`;grid.appendChild(el)});box.appendChild(grid);
+  }
+}
+async function restoreFolder(folderId){
+  if(!canAdmin()||!folderId)return;
+  if(!confirm("Pulihkan folder ini beserta pekerjaan di dalamnya?"))return;
+  const {data,error}=await sb.rpc("restore_folder",{p_folder_id:folderId});
+  if(error){alert("Folder gagal dipulihkan: "+error.message);return;}
+  if(data===false){alert("Folder tidak ditemukan atau sudah dipulihkan.");return;}
+  await Promise.all([loadFolders(),loadTasks(),loadHistory()]);
+  renderFolders();renderHistory();
+}
+
 async function loadTasks(){
   const r=await sb.from("tasks").select("*").eq("workspace_id",currentWorkspaceId).order("task_date").order("created_at");
   if(!r.error){tasks=r.data||[];renderAll()}
@@ -888,7 +940,7 @@ function userUI(){
  $("userName").textContent=p.username||"p3nabi";$("userJob").textContent=p.jobdesk||"Team Content";$("sideJob").textContent=p.jobdesk||"Team Content";$("userRole").textContent=canAdmin()?"Super Admin":"Karyawan";
  $("userAvatar").innerHTML=avatarHtml(p);$("sideAvatar").innerHTML=avatarHtml(p);
 }
-function renderAll(){userUI();renderDashboard();renderFolders();renderTeam();fillYears();applyPermissions()}
+function renderAll(){userUI();renderDashboard();renderFolders();renderTeam();fillYears();applyPermissions();renderHistory()}
 function applyPermissions(){
   const admin=canAdmin();
   document.querySelectorAll(".adminOnly").forEach(el=>el.classList.toggle("hide",!admin));
@@ -923,6 +975,18 @@ function renderDashboard(){
  const pl=$("picList");pl.innerHTML="";Object.entries(picMap).sort((a,b)=>b[1].tasks-a[1].tasks).forEach(([n,v])=>{const prof=profiles.find(p=>p.username===n);const row=document.createElement("div");row.className="picRow";row.innerHTML=`<div class="avatar">${avatarHtml(prof||{username:n})}</div><div><div class="picName">${esc(n)}</div><div class="picMeta">${v.projects.size} project · ${v.done}/${v.tasks} selesai</div></div><div class="picCount">${v.tasks}</div>`;pl.appendChild(row)});if(!pl.children.length)pl.innerHTML='<div class="empty">Belum ada data PIC.</div>';
 }
 
+function visibleTasks(){
+  if(taskFilter==="mine"){
+    const me=(getProfile()?.username||"").trim();
+    return me ? tasks.filter(t=>(t.pic||"").trim()===me) : [];
+  }
+  return tasks;
+}
+function updateTaskFilterUI(){
+  document.querySelectorAll(".taskTab").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.taskFilter===taskFilter);
+  });
+}
 function visibleTasks(){
   if(taskFilter==="mine"){
     const me=(getProfile()?.username||"").trim();
@@ -1120,12 +1184,14 @@ function openProject(folderId){
 }
 function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("projectView").classList.remove("compactProjectView");$("folderHome").classList.remove("hide");renderFolders()}
 
-async function loadTeam(){ await loadProfiles(); renderTeam(); }
 function renderTeam(){
  const box=$("teamGrid");
  box.innerHTML="";
- if(!profiles.length){box.innerHTML='<div class="empty">Belum ada anggota tim.</div>';return}
- profiles.forEach(p=>{
+ const members=workspaceMembers.filter(m=>m.workspace_id===currentWorkspaceId);
+ if(!members.length){box.innerHTML='<div class="empty">Belum ada anggota di workspace ini.</div>';return}
+ const byId=new Map(profiles.map(p=>[p.id,p]));
+ members.forEach(m=>{
+   const p=byId.get(m.user_id)||{id:m.user_id,username:"User",jobdesk:"Jobdesk belum diisi"};
    const ts=tasks.filter(t=>(t.pic||"").trim()===p.username),done=ts.filter(t=>t.completed).length,pct=ts.length?Math.round(done/ts.length*100):0;
    const c=document.createElement("div");
    c.className="panel teamCard";
@@ -1136,7 +1202,7 @@ function renderTeam(){
          <h3>${esc(p.username||"Tanpa nama")}</h3>
          <div class="job">${esc(p.jobdesk||"Jobdesk belum diisi")}</div>
        </div>
-       <span style="margin-left:auto;font-size:10px;color:${p.role==="super_admin"||p.role==="admin"?"#c67cff":"#85818d"}">${p.role==="super_admin"||p.role==="admin"?"Super Admin":"Karyawan"}</span>
+       <span class="teamRole ${memberRoleClass(m.role)}">${memberRoleLabel(m.role)}</span>
      </div>
      <div class="teamStats">
        <div class="teamStat"><b>${ts.length}</b><small>Pekerjaan</small></div>
@@ -1149,26 +1215,64 @@ function renderTeam(){
          <input class="editTeamUsername" value="${esc(p.username||"")}" />
          <label>Jobdesk</label>
          <input class="editTeamJobdesk" value="${esc(p.jobdesk||"")}" />
-         <button class="save" type="button">Simpan perubahan</button>
+         <label>Role workspace</label>
+         <select class="editTeamRole"><option value="employee" ${m.role==="employee"?"selected":""}>Employee</option><option value="head" ${m.role==="head"?"selected":""}>Head</option><option value="super_admin" ${m.role==="super_admin"?"selected":""}>Super Admin</option></select>
+         <div class="teamActions"><button class="save" type="button">Simpan perubahan</button>${m.user_id!==user?.id?'<button class="pill memberRemove" type="button">Cabut akses</button>':''}</div>
        </div>`:""}
    `;
    if(canAdmin()){
      c.querySelector(".save").onclick=async()=>{
        const username=c.querySelector(".editTeamUsername").value.trim();
        const jobdesk=c.querySelector(".editTeamJobdesk").value.trim();
+       const role=c.querySelector(".editTeamRole").value;
        if(!username){alert("Username wajib diisi.");return}
        const duplicate=profiles.some(x=>x.id!==p.id&&(x.username||"").trim().toLowerCase()===username.toLowerCase());
        if(duplicate){alert("Username tersebut sudah dipakai anggota lain.");return}
-       const {error}=await sb.from("profiles").update({username,jobdesk:jobdesk||null,updated_at:new Date().toISOString()}).eq("id",p.id);
+       const pr=await sb.from("profiles").update({username,jobdesk:jobdesk||null,updated_at:new Date().toISOString()}).eq("id",p.id);
+       if(pr.error){alert(pr.error.message);return}
+       const mr=await sb.from("workspace_members").update({role}).eq("workspace_id",currentWorkspaceId).eq("user_id",p.id);
+       if(mr.error){alert(mr.error.message);return}
+       await loadWorkspaceContext();await loadProfiles();renderTeam();
+     };
+     const remove=c.querySelector(".memberRemove");
+     if(remove) remove.onclick=async()=>{
+       if(!confirm(`Cabut akses ${p.username||"user ini"} dari ${currentWorkspaceName()}?`))return;
+       const {error}=await sb.from("workspace_members").delete().eq("workspace_id",currentWorkspaceId).eq("user_id",p.id);
        if(error){alert(error.message);return}
-       await loadProfiles();
-       renderTeam();
+       await loadWorkspaceContext();await loadProfiles();renderTeam();
      };
    }
    box.appendChild(c);
  });
 }
 
+function openMemberModal(){
+ if(!canAdmin())return;
+ $("memberEmail").value="";$("memberUsername").value="";$("memberJobdesk").value="";$("memberRole").value="employee";$("memberErr").textContent="";
+ $("memberModal").classList.remove("hide");setTimeout(()=>$("memberEmail").focus(),30);
+}
+function closeMemberModal(){$("memberModal").classList.add("hide")}
+async function addMember(){
+ if(!canAdmin())return;
+ const email=$("memberEmail").value.trim().toLowerCase(),username=$("memberUsername").value.trim(),jobdesk=$("memberJobdesk").value.trim(),role=$("memberRole").value;
+ $("memberErr").textContent="";
+ if(!email){$("memberErr").textContent="Email wajib diisi.";return}
+ const btn=$("memberSave");btn.disabled=true;btn.textContent="Mencari user…";
+ try{
+   const {data,error}=await sb.rpc("team_find_user_by_email",{target_workspace_id:currentWorkspaceId,target_email:email});
+   if(error){$("memberErr").textContent=error.message;return}
+   const found=Array.isArray(data)?data[0]:data;
+   if(!found){$("memberErr").textContent="User belum terdaftar di sistem. Buat akun/invite terlebih dahulu melalui Supabase Auth.";return}
+   if(workspaceMembers.some(m=>m.workspace_id===currentWorkspaceId&&m.user_id===found.user_id)){ $("memberErr").textContent="User tersebut sudah menjadi anggota workspace ini.";return }
+   const finalUsername=username||found.username||email.split("@")[0];
+   const finalJobdesk=jobdesk||found.jobdesk||"Team Content";
+   const pr=await sb.from("profiles").upsert({id:found.user_id,username:finalUsername,jobdesk:finalJobdesk,role:role,updated_at:new Date().toISOString()},{onConflict:"id"});
+   if(pr.error){$("memberErr").textContent=pr.error.message;return}
+   const mr=await sb.from("workspace_members").insert({workspace_id:currentWorkspaceId,user_id:found.user_id,role});
+   if(mr.error){$("memberErr").textContent=mr.error.message;return}
+   closeMemberModal();await loadWorkspaceContext();await loadProfiles();renderTeam();
+ }finally{btn.disabled=false;btn.textContent="Tambah Anggota"}
+}
 function dateKey(d){return d.toISOString().slice(0,10)}
 function sameDate(a,b){return a===b}
 function renderCalendar(){
@@ -1197,6 +1301,9 @@ async function deleteAgenda(a){if(!canAdmin())return;if(!confirm(`Hapus agenda "
 function renderSettings(){
  const p=getProfile()||{};$("settingsPreviewName").textContent=p.username||"p3nabi";$("settingsPreviewEmail").textContent=user?.email||"";$("settingsAvatar").innerHTML=avatarHtml(p);$("profileUsername").value=p.username||"";$("profileJobdesk").value=p.jobdesk||"";
 }
+$("addMemberBtn").onclick=()=>openMemberModal();
+$("memberCancel").onclick=closeMemberModal;
+$("memberSave").onclick=addMember;
 $("saveProfile").onclick=async()=>{const username=$("profileUsername").value.trim(),jobdesk=$("profileJobdesk").value.trim();if(!username){$("profileErr").textContent="Username wajib diisi.";return}const {error}=await sb.from("profiles").update({username,jobdesk:jobdesk||null,updated_at:new Date().toISOString()}).eq("id",user.id);if(error)$("profileErr").textContent=error.message;else{$("profileErr").textContent="Profil tersimpan.";await loadProfiles()}}
 $("avatarFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>3*1024*1024){$("profileErr").textContent="Foto maksimal 3 MB.";return}const ext=file.name.split(".").pop()?.toLowerCase()||"jpg",path=`${user.id}/${Date.now()}.${ext}`;const up=await sb.storage.from("avatars").upload(path,file,{upsert:true,contentType:file.type});if(up.error){$("profileErr").textContent=up.error.message;return}const {data}=sb.storage.from("avatars").getPublicUrl(path);const {error}=await sb.from("profiles").update({avatar_url:data.publicUrl,updated_at:new Date().toISOString()}).eq("id",user.id);if(error)$("profileErr").textContent=error.message;else{await loadProfiles();renderSettings()}}
 $("savePassword").onclick=async()=>{const pass=$("newPassword").value;if(pass.length<6){$("passwordErr").textContent="Password minimal 6 karakter.";return}const {error}=await sb.auth.updateUser({password:pass});if(error)$("passwordErr").textContent=error.message;else{$("passwordErr").textContent="Password berhasil diubah.";$("newPassword").value=""}}
@@ -1237,6 +1344,20 @@ async function toggle(t){
   renderAll();
   if(currentProject) openProject(currentProject);
 }
+
+function openTaskModal(date){
+  $("newDate").value=date;
+  $("newLabel").value="";
+  $("newTitle").value="";
+  $("newProject").value=currentProject&&currentProject!=="Belum ditentukan"?currentProject:"";
+  fillPicSelect("newPic","");
+  $("taskErr").textContent="";
+  $("taskModal").classList.remove("hide");
+}
+function closeTaskModal(){$("taskModal").classList.add("hide")}
+$("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
+$("taskSave").onclick=async()=>{if(!canAdmin())return;const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,workspace_id:currentWorkspaceId,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks()}}
+
 let editingFolder=null;
 function openFolderCreate(){
   if(!canAdmin())return;editingFolder=null;$("folderModalTitle").textContent="Buat folder";$("folderNameInput").value="";$("folderDescriptionInput").value="";$("folderErr").textContent="";$("folderSave").textContent="Buat Folder";$("folderModal").classList.remove("hide");$("folderNameInput").focus();
@@ -1245,66 +1366,18 @@ function openFolderEdit(folder){
   if(!canAdmin())return;editingFolder=folder;$("folderModalTitle").textContent="Edit folder";$("folderNameInput").value=folder.name||"";$("folderDescriptionInput").value=folder.description||"";$("folderErr").textContent="";$("folderSave").textContent="Simpan Perubahan";$("folderModal").classList.remove("hide");$("folderNameInput").focus();
 }
 function closeFolderModal(){editingFolder=null;$("folderModal").classList.add("hide")}
-async function loadHistory(){
-  if(!currentWorkspaceId){historyRows=[];return;}
-  const r=await sb.from("history").select("*").eq("workspace_id",currentWorkspaceId).order("created_at",{ascending:false}).limit(200);
-  if(!r.error)historyRows=r.data||[];
-  renderHistory();
-}
-function historyLabel(action){return ({delete:"Dihapus",restore:"Dipulihkan",create:"Dibuat",update:"Diedit"}[action]||action||"Aktivitas")}
-function historyDate(v){try{return new Date(v).toLocaleString("id-ID",{dateStyle:"medium",timeStyle:"short"})}catch(_){return v||""}}
-async function loadDeletedFolders(){
-  if(!currentWorkspaceId)return [];
-  const r=await sb.from("folders").select("*").eq("workspace_id",currentWorkspaceId).not("deleted_at","is",null).order("deleted_at",{ascending:false});
-  return r.error?[]:(r.data||[]);
-}
-async function restoreFolder(folder){
-  if(!canAdmin())return;
-  if(!confirm(`Pulihkan folder "${folder.name}"? Semua pekerjaan di dalamnya akan muncul kembali.`))return;
-  const {data,error}=await sb.rpc("restore_folder",{p_folder_id:folder.id});
-  if(error){alert("Folder gagal dipulihkan: "+error.message);return;}
-  if(data===false){alert("Folder tidak ditemukan atau sudah aktif.");return;}
-  await Promise.all([loadFolders(),loadHistory()]);
-  renderFolders();renderHistory();
-}
-async function renderHistory(){
-  const box=$("historyList"); if(!box)return; box.innerHTML="<div class=\"empty\">Memuat history...</div>";
-  const deleted=await loadDeletedFolders();
-  const rows=historyRows.filter(h=>historyFilter==="all"||historyFilter==="activity"||h.item_type===historyFilter);
-  let html="";
-  if(historyFilter!=="activity"){
-    html+=`<div style=\"margin:6px 0 12px;font-weight:800;font-size:13px\">Sampah / Folder Terhapus</div>`;
-    if(!deleted.length) html+=`<div class=\"empty\" style=\"margin-bottom:18px\">Tidak ada folder di sampah.</div>`;
-    deleted.forEach(f=>{
-      const itemCount=tasks.filter(t=>String(t.folder_id||"")===String(f.id)).length;
-      html+=`<div class=\"historyItem\" style=\"display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);\"><div class=\"folderIcon red\"></div><div style=\"flex:1;min-width:0\"><b>${esc(f.name)}</b><div class=\"muted\" style=\"margin-top:3px\">${itemCount} pekerjaan · Dihapus ${esc(historyDate(f.deleted_at))}</div></div>${canAdmin()?`<button class=\"saveBtn restoreBtn\" data-id=\"${f.id}\" style=\"width:auto;padding:8px 12px\">↩ Pulihkan</button>`:""}</div>`;
-    });
-  }
-  if(historyFilter!=="folder"){
-    html+=`<div style=\"margin:22px 0 12px;font-weight:800;font-size:13px\">Aktivitas</div>`;
-    if(!rows.length) html+=`<div class=\"empty\">Belum ada aktivitas yang tercatat.</div>`;
-    rows.forEach(h=>{html+=`<div class=\"historyItem\" style=\"display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)\"><div style=\"width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--soft)\">${h.action==="delete"?"🗑":h.action==="restore"?"↩":"•"}</div><div style=\"flex:1\"><b>${esc(historyLabel(h.action))}: ${esc(h.item_name||h.item_type||"Item")}</b><div class=\"muted\" style=\"margin-top:3px\">${esc(historyDate(h.created_at))}</div></div></div>`});
-  }
-  box.innerHTML=html||`<div class=\"empty\">Belum ada history.</div>`;
-  box.querySelectorAll(".restoreBtn").forEach(b=>b.onclick=()=>restoreFolder(deleted.find(f=>String(f.id)===String(b.dataset.id))));
-}
-
-document.querySelectorAll(".historyTab").forEach(btn=>btn.onclick=()=>{historyFilter=btn.dataset.historyFilter||"all";document.querySelectorAll(".historyTab").forEach(x=>x.classList.toggle("active",x===btn));renderHistory()});
-$("refreshHistory").onclick=loadHistory;
-
 async function deleteFolder(folder,items){
   if(!canAdmin())return;
-  const count=items.length;
-  const msg=count?`Folder "${folder.name}" memiliki ${count} pekerjaan. Folder akan dipindahkan ke History/Sampah dan semua pekerjaan tetap aman. Lanjutkan?`:`Pindahkan folder "${folder.name}" ke History/Sampah?`;
-  if(!confirm(msg))return;
+  if(!confirm(`Pindahkan folder "${folder.name}" ke Sampah? Semua pekerjaan di dalamnya akan tetap aman.`))return;
   const {data,error}=await sb.rpc("soft_delete_folder",{p_folder_id:folder.id});
-  if(error){alert("Folder gagal dipindahkan ke History: "+error.message);return;}
-  if(data===false){alert("Folder tidak ditemukan atau sudah berada di History.");return;}
+  if(error){alert("Folder gagal dipindahkan ke Sampah: "+error.message);return;}
+  if(data===false){alert("Folder tidak ditemukan atau sudah ada di Sampah.");return;}
   folders=folders.filter(f=>f.id!==folder.id);
   if(String(currentProject)===String(folder.id))closeProject();
-  await loadHistory();
-  renderFolders();
+  await Promise.all([loadTasks(),loadHistory()]);
+  renderFolders();renderHistory();
 }
+
 $("addTaskBtn").onclick=openFolderCreate;
 $("folderCancel").onclick=closeFolderModal;
 $("folderModal").onclick=e=>{if(e.target.id==="folderModal")closeFolderModal()};
@@ -1326,18 +1399,20 @@ function closeTaskModal(){$("taskModal").classList.add("hide")}
 $("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeTaskModal()}
 $("taskSave").onclick=async()=>{if(!canAdmin())return;if(!currentProject){$("taskErr").textContent="Buka folder terlebih dahulu.";return}const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,workspace_id:currentWorkspaceId,folder_id:currentProject,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks();openProject(currentProject)}}
 
+
+document.querySelectorAll(".historyTab").forEach(btn=>btn.onclick=()=>{historyFilter=btn.dataset.historyFilter||"trash";renderHistory()});
 function setPage(page){if(!canAdmin() && !["folders","calendar","team","history","settings"].includes(page)) page="folders";currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
  if(page==="folders"){$("pageTitle").textContent="Kerjaan";$("pageSub").textContent="Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan."}
  if(page==="calendar"){$("pageTitle").textContent="Calendar";$("pageSub").textContent="Agenda dan tanggal penting tim."}
  if(page==="team"){$("pageTitle").textContent="Team";$("pageSub").textContent="Anggota tim dan jobdesk."}
- if(page==="history"){$("pageTitle").textContent="History";$("pageSub").textContent="Riwayat aktivitas dan folder terhapus.";loadHistory()}
+ if(page==="history"){$("pageTitle").textContent="History";$("pageSub").textContent="Riwayat dan Sampah workspace."}
  if(page==="calendar") loadCalendar();
     if(page==="team") loadTeam();
     if(page==="settings"){$("pageTitle").textContent="Settings";$("pageSub").textContent="Pengaturan akun pribadi."}
 }
 document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>{if(b.dataset.page==="folders")closeProject();setPage(b.dataset.page);window.scrollTo({top:0,behavior:"smooth"})});
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;["editModal","taskModal","agendaModal","folderModal"].forEach(id=>$(id).classList.add("hide"))});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;["editModal","taskModal","agendaModal","folderModal","jobEditModal","memberModal"].forEach(id=>$(id)?.classList.add("hide"))});
 start();
 
 </script>
