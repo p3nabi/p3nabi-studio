@@ -857,24 +857,17 @@ $("switchWorkspace").onclick=async()=>{await loadWorkspaceContext();showWorkspac
 
 async function loadCurrentWorkspaceMembers(){
  if(!currentWorkspaceId)return false;
-
- const r=await sb
-   .from("workspace_members")
-   .select("workspace_id,user_id,role")
-   .eq("workspace_id",currentWorkspaceId);
-
+ currentWorkspaceId=String(currentWorkspace?.id||currentWorkspaceId);
+ const r=await sb.from("workspace_members").select("workspace_id,user_id,role").eq("workspace_id",currentWorkspaceId);
  if(r.error){
-   console.error("Team members load error:",r.error);
-   // Keep the membership already obtained by loadWorkspaceContext().
-   // This still lets the current user's own card render instead of blanking Team.
-   renderTeam();
+   console.error("[Team] workspace_members load error:",r.error);
    return false;
  }
-
- workspaceMembers=workspaceMembers
-   .filter(m=>m.workspace_id!==currentWorkspaceId)
-   .concat(r.data||[]);
-
+ const fresh=r.data||[];
+ workspaceMembers=workspaceMembers.filter(m=>String(m.workspace_id)!==String(currentWorkspaceId)).concat(fresh);
+ const me=fresh.find(m=>String(m.user_id)===String(user?.id));
+ if(me)workspaceRole=me.role;
+ console.info("[Team] members loaded:",currentWorkspaceId,fresh);
  return true;
 }
 async function loadAll(){
@@ -886,6 +879,7 @@ async function loadAll(){
   realtimeChannel=sb.channel("workspace-live")
    .on("postgres_changes",{event:"*",schema:"public",table:"tasks"},loadTasks)
    .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},loadProfiles)
+   .on("postgres_changes",{event:"*",schema:"public",table:"workspace_members"},async()=>{await loadCurrentWorkspaceMembers();await loadProfiles();renderTeam();})
    .on("postgres_changes",{event:"*",schema:"public",table:"agendas"},loadAgendas)
    .on("postgres_changes",{event:"*",schema:"public",table:"folders"},async()=>{await loadFolders();await loadHistory();renderFolders();renderHistory();})
    .on("postgres_changes",{event:"*",schema:"public",table:"history"},async()=>{await loadHistory();renderHistory();})
@@ -969,16 +963,19 @@ async function loadTeam(){
     renderTeam();
     return;
   }
-
-  await loadCurrentWorkspaceMembers();
-  await loadProfiles();
+  const ok=await loadCurrentWorkspaceMembers();
+  if(!ok){
+    renderTeam("Gagal memuat anggota workspace. Cek Console untuk detail error.");
+    return;
+  }
+  await loadProfiles({teamOnly:true});
   renderTeam();
 }
 
-async function loadProfiles(){
+async function loadProfiles(options={}){
   const ids=[...new Set(
     workspaceMembers
-      .filter(m=>m.workspace_id===currentWorkspaceId)
+      .filter(m=>String(m.workspace_id)===String(currentWorkspaceId))
       .map(m=>m.user_id)
       .filter(Boolean)
   )];
@@ -986,345 +983,37 @@ async function loadProfiles(){
   if(!ids.length){
     profiles=[];
     isSuperAdmin=canAdmin();
-    renderTeam();
+    if(options.teamOnly)renderTeam();
     renderSettings();
     return;
   }
 
-  const r=await sb
-    .from("profiles")
-    .select("*")
+  const r=await sb.from("profiles")
+    .select("id,username,jobdesk,role,avatar_url,updated_at")
     .in("id",ids)
     .order("username");
 
   if(r.error){
-    console.error("Team profiles load error:",r.error);
+    console.error("[Team] profiles load error:",r.error);
+    if(options.teamOnly)renderTeam("Profil anggota gagal dimuat: "+r.error.message);
     return;
   }
 
   profiles=r.data||[];
   isSuperAdmin=canAdmin();
-
-  renderTeam();
-  renderAll();
+  if(options.teamOnly)renderTeam();
   renderSettings();
+  if(!options.teamOnly)renderAll();
 
-  if(!$("editModal").classList.contains("hide")&&editingTask){
-    fillPicSelect("editPic",(editingTask.pic||"").trim());
+  if(!$('editModal').classList.contains('hide')&&editingTask){
+    fillPicSelect('editPic',(editingTask.pic||'').trim());
   }
 }
-async function loadAgendas(){
-  const r=await sb.from("agendas").select("*").order("agenda_date").order("agenda_time");
-  if(!r.error){agendas=r.data||[];renderCalendar()}
-}
-function userUI(){
- const p=getProfile()||{username:user?.email?.split("@")[0]||"p3nabi",jobdesk:"Team Content"};
- $("userName").textContent=p.username||"p3nabi";$("userJob").textContent=p.jobdesk||"Team Content";$("sideJob").textContent=p.jobdesk||"Team Content";$("userRole").textContent=canAdmin()?"Super Admin":"Karyawan";
- $("userAvatar").innerHTML=avatarHtml(p);$("sideAvatar").innerHTML=avatarHtml(p);
-}
-function renderAll(){userUI();renderDashboard();renderFolders();renderTeam();fillYears();applyPermissions();renderHistory()}
-function applyPermissions(){
-  const admin=canAdmin();
-  document.querySelectorAll(".adminOnly").forEach(el=>el.classList.toggle("hide",!admin));
-  $("readonlyNote")?.classList.toggle("hide",admin);
-  document.querySelectorAll(".navBtn").forEach(btn=>{
-    const page=btn.dataset.page;
-    // Semua anggota dapat melihat Kerjaan, Calendar, Team, dan Settings.
-    // Dashboard tetap khusus Super Admin.
-    const allowed=admin || ["folders","calendar","team","history","settings"].includes(page);
-    btn.classList.toggle("hide",!allowed);
-  });
-  if(!admin && !["folders","calendar","team","history","settings"].includes(currentPage)) setPage("folders");
-}
-
-function fillYears(){
- const ys=years();if(!ys.length)ys=[String(new Date().getFullYear())];
- const old=$("yearSelect").value;$("yearSelect").innerHTML=ys.map(y=>`<option value="${y}">${y}</option>`).join("");$("yearSelect").value=ys.includes(old)?old:ys[0];
-}
-$("yearSelect").onchange=renderDashboard;
-
-function renderDashboard(){
- const total=tasks.length,done=tasks.filter(t=>t.completed).length,pct=total?Math.round(done/total*100):0,y=currentYear(),yt=tasks.filter(t=>yearOf(t)===y);
- const namedProjects=[...new Set(yt.map(projectName).filter(x=>x!=="Belum ditentukan"))];
- const pics=[...new Set(yt.map(t=>(t.pic||"").trim()).filter(Boolean))];
- $("overallPct").innerHTML=`${pct}% <span>pekerjaan selesai</span>`;$("overallFill").style.width=pct+"%";$("overallDone").textContent=`${done} dari ${total}`;$("overallRemain").textContent=`${total-done} tersisa`;
- $("yearProjectCount").textContent=namedProjects.length;$("yearTaskCount").textContent=`${yt.length} pekerjaan`;$("picCount").textContent=pics.length;$("unassignedCount").textContent=`${yt.filter(t=>!(t.pic||"").trim()).length} tanpa PIC`;
- const yb=$("yearProjects");yb.innerHTML=`<div class="yearBox"><b>${namedProjects.length}</b><small>Project</small></div><div class="yearBox"><b>${yt.length}</b><small>Pekerjaan</small></div><div class="yearBox"><b>${yt.filter(t=>t.completed).length}</b><small>Selesai</small></div><div class="yearBox"><b>${yt.length?Math.round(yt.filter(t=>t.completed).length/yt.length*100):0}%</b><small>Progress</small></div>`;
- const projectMap={};yt.forEach(t=>{const n=projectName(t);(projectMap[n]??={tasks:0,done:0,pics:new Set()});projectMap[n].tasks++;if(t.completed)projectMap[n].done++;if(t.pic)projectMap[n].pics.add(t.pic)});
- const pt=$("projectTable");pt.innerHTML=`<div class="tableRow tableHead"><span>Project</span><span>PIC</span><span class="right">Task</span><span class="right">Done</span></div>`;
- Object.entries(projectMap).sort((a,b)=>b[1].tasks-a[1].tasks).forEach(([n,v])=>{const row=document.createElement("div");row.className="tableRow";row.innerHTML=`<b>${esc(n)}</b><span class="muted">${esc([...v.pics].join(", ")||"Belum ditentukan")}</span><span class="right">${v.tasks}</span><span class="right">${v.done}/${v.tasks}</span>`;pt.appendChild(row)});
- const picMap={};yt.forEach(t=>{const n=(t.pic||"").trim()||"Belum ditentukan";(picMap[n]??={tasks:0,done:0,projects:new Set()});picMap[n].tasks++;if(t.completed)picMap[n].done++;picMap[n].projects.add(projectName(t))});
- const pl=$("picList");pl.innerHTML="";Object.entries(picMap).sort((a,b)=>b[1].tasks-a[1].tasks).forEach(([n,v])=>{const prof=profiles.find(p=>p.username===n);const row=document.createElement("div");row.className="picRow";row.innerHTML=`<div class="avatar">${avatarHtml(prof||{username:n})}</div><div><div class="picName">${esc(n)}</div><div class="picMeta">${v.projects.size} project · ${v.done}/${v.tasks} selesai</div></div><div class="picCount">${v.tasks}</div>`;pl.appendChild(row)});if(!pl.children.length)pl.innerHTML='<div class="empty">Belum ada data PIC.</div>';
-}
-
-function visibleTasks(){
-  if(taskFilter==="mine"){
-    const me=(getProfile()?.username||"").trim();
-    return me ? tasks.filter(t=>(t.pic||"").trim()===me) : [];
-  }
-  return tasks;
-}
-function updateTaskFilterUI(){
-  document.querySelectorAll(".taskTab").forEach(btn=>{
-    btn.classList.toggle("active",btn.dataset.taskFilter===taskFilter);
-  });
-}
-function visibleTasks(){
-  if(taskFilter==="mine"){
-    const me=(getProfile()?.username||"").trim();
-    return me ? tasks.filter(t=>(t.pic||"").trim()===me) : [];
-  }
-  return tasks;
-}
-function updateTaskFilterUI(){
-  document.querySelectorAll(".taskTab").forEach(btn=>{
-    btn.classList.toggle("active",btn.dataset.taskFilter===taskFilter);
-  });
-}
-function folderItems(folderId){
-  return visibleTasks().filter(t=>String(t.folder_id||"")===String(folderId));
-}
-function folderStatus(items){
-  if(!items.length)return "red";
-  const done=items.filter(t=>t.completed).length;
-  return done===items.length?"green":done>0?"orange":"red";
-}
-function folderCard(folder,items){
-  const status=folderStatus(items),done=items.filter(t=>t.completed).length;
-  const el=document.createElement("div");
-  el.className=`folderCard status-${status}`;
-  el.innerHTML=`<button type="button" class="folderDots" aria-label="Menu folder" title="Menu folder">⋮</button><div class="folderIcon ${status}"></div><div class="folderName">${esc(folder.name)}</div><div class="folderStats">${items.length} pekerjaan<strong>${done}/${items.length} selesai</strong></div>`;
-  el.addEventListener("click",e=>{if(e.target.closest(".folderDots")||e.target.closest(".folderMenu"))return;openProject(folder.id)});
-  const dots=el.querySelector(".folderDots");
-  if(canAdmin()) dots.onclick=e=>{
-    e.preventDefault();e.stopPropagation();
-    document.querySelectorAll(".folderMenu").forEach(x=>x.remove());
-    const menu=document.createElement("div");menu.className="folderMenu";
-    menu.innerHTML=`<button type="button" data-act="edit">Edit folder</button><button type="button" data-act="del" class="danger">Hapus folder</button>`;
-    el.appendChild(menu);
-    menu.querySelector('[data-act="edit"]').onclick=ev=>{ev.stopPropagation();menu.remove();openFolderEdit(folder)};
-    menu.querySelector('[data-act="del"]').onclick=ev=>{ev.stopPropagation();menu.remove();deleteFolder(folder,items)};
-  };
-  else dots.classList.add("hide");
-  return el;
-}
-function renderFolders(){
-  const grid=$("foldersGrid");grid.innerHTML="";updateTaskFilterUI();
-  if(!folders.length){
-    grid.innerHTML=canAdmin()?'<div class="empty">Belum ada folder. Klik “＋ Tambah Folder” untuk membuat folder pertama.</div>':'<div class="empty">Belum ada folder kerjaan.</div>';
-    return;
-  }
-  folders.forEach(folder=>grid.appendChild(folderCard(folder,folderItems(folder.id))));
-}
-
-document.querySelectorAll(".taskTab").forEach(btn=>{
-  btn.onclick=()=>{
-    taskFilter=btn.dataset.taskFilter||"all";
-    if(currentProject) closeProject();
-    renderFolders();
-  };
-});
-
-function jobNameOf(t){
-  // IMPORTANT: batch_label is the existing "judul kerjaan" field.
-  // project_name is kept as project metadata and is NOT used to rename the card.
-  return (t.batch_label||t.project_name||"Kerjaan").trim() || "Kerjaan";
-}
-function formatDate(d){return d?d.split("-").reverse().join("."):""}
-
-function groupJobItems(items){
-  const groups={};
-  items.forEach(t=>{
-    const name=jobNameOf(t);
-    const key=t.task_date+"|"+name;
-    (groups[key]??=[]).push(t);
-  });
-  return groups;
-}
-
-async function duplicateJob(items){
-  if(!canAdmin()||!items?.length)return;
-
-  // SOURCE SNAPSHOT: source tasks are never modified during duplication.
-  const sourceItems=items.map(t=>({
-    id:t.id,
-    task_date:t.task_date,
-    batch_label:t.batch_label||null,
-    title:t.title,
-    project_name:t.project_name||null,
-    pic:t.pic||null,
-    source_url:t.source_url||null
-  }));
-
-  const date=prompt("Tanggal baru (YYYY-MM-DD)",sourceItems[0].task_date);
-  if(!date)return;
-
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){
-    alert("Format tanggal harus YYYY-MM-DD.");
-    return;
-  }
-
-  // Create completely new database rows.
-  // The source rows are READ ONLY and are never updated/reset.
-  const payload=sourceItems.map(t=>({
-    task_date:date,
-    batch_label:t.batch_label,
-    title:t.title,
-    project_name:t.project_name,
-    pic:t.pic,
-    source_url:t.source_url,
-    workspace_id:currentWorkspaceId,
-    folder_id:currentProject,
-    created_by:user.id,
-    completed:false,
-    completed_by:null,
-    completed_at:null
-  }));
-
-  const sourceIds=new Set(sourceItems.map(t=>String(t.id)));
-
-  const {data:inserted,error}=await sb
-    .from("tasks")
-    .insert(payload)
-    .select("id,task_date,batch_label,title,folder_id,workspace_id,completed");
-
-  if(error){
-    alert("Duplicate gagal: "+error.message);
-    return;
-  }
-
-  // Safety guard: the database must generate brand-new IDs.
-  const reusedSourceId=(inserted||[]).some(t=>sourceIds.has(String(t.id)));
-  if(reusedSourceId){
-    console.error("Duplicate safety check failed: source ID reused",{
-      sourceIds:[...sourceIds],
-      inserted
-    });
-    alert("Duplicate dibatalkan karena ID pekerjaan sumber terdeteksi terpakai.");
-    return;
-  }
-
-  // Supabase is the source of truth after duplication.
-  await loadTasks();
-  if(currentProject)openProject(currentProject);
-}
-
-let editingJobGroup=null;
-
-function openJobEdit(items){
-  if(!canAdmin()||!items?.length)return;
-  editingJobGroup=items;
-  $("jobNameInput").value=jobNameOf(items[0]);
-  $("jobDateInput").value=items[0].task_date;
-  $("jobEditErr").textContent="";
-  $("jobEditModal").classList.remove("hide");
-  $("jobNameInput").focus();
-}
-function closeJobEdit(){
-  editingJobGroup=null;
-  $("jobEditModal").classList.add("hide");
-}
-$("jobEditCancel").onclick=closeJobEdit;
-$("jobEditModal").onclick=e=>{
-  if(e.target.id==="jobEditModal")closeJobEdit();
-};
-
-$("jobEditSave").onclick=async()=>{
-  if(!canAdmin()||!editingJobGroup)return;
-
-  const name=$("jobNameInput").value.trim();
-  const date=$("jobDateInput").value;
-
-  if(!name){$("jobEditErr").textContent="Nama kerjaan wajib diisi.";return}
-  if(!date){$("jobEditErr").textContent="Tanggal wajib diisi.";return}
-
-  const ids=editingJobGroup.map(t=>t.id);
-
-  // Preserve the existing schema and checklist fields.
-  // Only the job title field (batch_label) and date are changed here.
-  const {error}=await sb.from("tasks")
-    .update({batch_label:name,task_date:date})
-    .in("id",ids);
-
-  if(error){$("jobEditErr").textContent=error.message;return}
-
-  closeJobEdit();
-  await loadTasks();
-  if(currentProject)openProject(currentProject);
-};
-
-async function deleteJobGroup(items){
-  if(!canAdmin()||!items?.length)return;
-  const name=jobNameOf(items[0]);
-  if(!confirm(`Hapus kerjaan "${name}" beserta ${items.length} output?`))return;
-
-  const {error}=await sb.from("tasks").delete().in("id",items.map(t=>t.id));
-  if(error){alert(error.message);return}
-
-  await loadTasks();
-  if(currentProject)openProject(currentProject);
-}
-
-function openProject(folderId){
-  currentProject=folderId;
-  const folder=folders.find(f=>String(f.id)===String(folderId));
-  if(!folder)return;
-  $("folderHome").classList.add("hide");
-  const root=$("projectView");root.classList.remove("hide");root.classList.add("compactProjectView");
-  const items=folderItems(folderId).slice().sort((a,b)=>(a.task_date||"").localeCompare(b.task_date||"")||String(a.batch_label||"").localeCompare(String(b.batch_label||"")||"")||String(a.created_at||"").localeCompare(String(b.created_at||"")));
-  const done=items.filter(t=>t.completed).length;
-  root.innerHTML=`
-    <div class="folderViewHead">
-      <div><div class="eyebrow">FOLDER KERJAAN</div><div style="font-size:24px;font-weight:850;margin-top:3px">${esc(folder.name)}</div>${folder.description?`<div class="muted" style="font-size:11px;margin-top:4px">${esc(folder.description)}</div>`:""}<span class="priorityBadge">${items.length?`${done}/${items.length} selesai`:'Belum ada kerjaan'}</span></div>
-      <div style="display:flex;gap:8px">${canAdmin()?'<button class="primary" id="monthAddTask">＋ Tambah Kerjaan</button>':""}<button class="backBtn" id="backProjects">← Folder</button></div>
-    </div>
-    <div class="projectTools"><input id="projectSearch" class="projectToolsSearch" type="search" placeholder="⌕  Cari kerjaan, output, atau PIC..."><select id="projectFilter" class="projectToolsFilter"><option value="all">Semua</option><option value="pending">Belum selesai</option><option value="partial">Sedang dikerjakan</option><option value="done">Selesai</option><option value="mine">PIC Saya</option></select></div>`;
-  $("backProjects").onclick=()=>closeProject();
-  if(canAdmin()) $("monthAddTask").onclick=()=>openTaskModal(new Date().toISOString().slice(0,10));
-  const groups=groupJobItems(items);
-  const groupEntries=Object.entries(groups).sort((a,b)=>a[0].localeCompare(b[0]));
-  function groupMatches(di,search,filter){
-    const q=(search||"").trim().toLowerCase(),name=jobNameOf(di[0]).toLowerCase(),outputs=di.map(t=>`${t.title||""} ${t.pic||""}`).join(" ").toLowerCase();
-    if(q&&!`${name} ${outputs}`.includes(q))return false;
-    const total=di.length,completed=di.filter(t=>t.completed).length;
-    if(filter==="pending"&&completed!==0)return false;if(filter==="partial"&&(completed===0||completed===total))return false;if(filter==="done"&&completed!==total)return false;
-    if(filter==="mine"){const me=(getProfile()?.username||"").trim();if(!me||!di.some(t=>(t.pic||"").trim()===me))return false;}return true;
-  }
-  function renderMiniCards(){
-    root.querySelectorAll(".miniCard,.miniCardEmpty").forEach(el=>el.remove());const search=$("projectSearch")?.value||"",filter=$("projectFilter")?.value||"all";let shown=0;
-    groupEntries.forEach(([key,di])=>{if(!groupMatches(di,search,filter))return;shown++;const d=di[0],dd=di.filter(x=>x.completed).length,pct=di.length?Math.round(dd/di.length*100):0,name=jobNameOf(d);const sec=document.createElement("section");sec.className="miniCard";
-      sec.innerHTML=`<div class="miniCardHead"><div style="display:flex;align-items:center;gap:7px;min-width:0"><h3 class="miniCardTitle">${esc(name)}</h3>${canAdmin()?'<button type="button" class="addOutputBtn" aria-label="Tambah output" title="Tambah output">＋ Output</button>':""}${canAdmin()?'<button type="button" class="jobMenuBtn" aria-label="Menu kerjaan" title="Menu kerjaan">⋮</button>':""}</div><div class="miniCardMeta"><span>${formatDate(d.task_date)}</span><span>${dd}/${di.length} selesai</span></div><div class="miniProgress"><div class="miniProgressFill" style="width:${pct}%"></div></div></div><div class="taskCard"></div>`;
-      const card=sec.querySelector(".taskCard");
-      if(canAdmin()){
-        const addOutputBtn=sec.querySelector(".addOutputBtn");
-        if(addOutputBtn)addOutputBtn.onclick=e=>{e.preventDefault();e.stopPropagation();openOutputModal(di)};
-        const menuBtn=sec.querySelector(".jobMenuBtn");
-        if(menuBtn)menuBtn.onclick=e=>{e.preventDefault();e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const menu=document.createElement("div");menu.className="jobMenu";menu.innerHTML='<button type="button" data-act="dup">Duplicate</button><button type="button" data-act="edit">Edit nama & tanggal</button><button type="button" data-act="del" class="danger">Hapus</button>';sec.appendChild(menu);menu.querySelector('[data-act="dup"]').onclick=e=>{e.stopPropagation();menu.remove();duplicateJob(di)};menu.querySelector('[data-act="edit"]').onclick=e=>{e.stopPropagation();menu.remove();openJobEdit(di)};menu.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();menu.remove();deleteJobGroup(di)}}}
-      di.forEach(t=>{
-        const row=document.createElement("div");
-        row.className="task";
-        row.dataset.taskId=String(t.id);
-        row.innerHTML=`<button class="check ${t.completed?"done":""}" aria-label="${t.completed?"Batalkan":"Selesaikan"}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}</div></div>${canAdmin()?'<div class="actions"><button class="actionBtn editBtn" title="Edit output">✎</button><button class="actionBtn deleteBtn" title="Hapus output">×</button></div>':""}`;
-        row.querySelector(".check").onclick=()=>toggle(t);
-        if(canAdmin()){
-          row.querySelector(".editBtn").onclick=()=>openEdit(t);
-          row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);
-        }
-        card.appendChild(row);
-      });
-      sec.dataset.groupKey=key;
-      root.appendChild(sec)
-    });
-    if(!shown){const empty=document.createElement("div");empty.className="miniCardEmpty";empty.textContent="Belum ada kerjaan di folder ini / tidak ada yang cocok dengan filter.";root.appendChild(empty)}
-  }
-  $("projectSearch").oninput=renderMiniCards;$("projectFilter").onchange=renderMiniCards;renderMiniCards();
-}
-function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("projectView").classList.remove("compactProjectView");$("folderHome").classList.remove("hide");renderFolders()}
-
-function renderTeam(){
+function renderTeam(message=""){
  const box=$("teamGrid");
  box.innerHTML="";
- const members=workspaceMembers.filter(m=>m.workspace_id===currentWorkspaceId);
+ const members=workspaceMembers.filter(m=>String(m.workspace_id)===String(currentWorkspaceId));
+ if(message){box.innerHTML=`<div class="empty">${esc(message)}</div>`;return;}
  if(!members.length){
    box.innerHTML='<div class="empty">Belum ada anggota di workspace ini.<br><small style="opacity:.7">Jika data member ada di Supabase tetapi tetap kosong, cek RLS SELECT pada tabel workspace_members.</small></div>';
    return;
