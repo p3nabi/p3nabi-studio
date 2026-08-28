@@ -1283,7 +1283,21 @@ function openProject(folderId){
       sec.innerHTML=`<div class="miniCardHead"><h3 class="miniCardTitle">${esc(name)}</h3>${canAdmin()?'<button type="button" class="jobMenuBtn" aria-label="Menu kerjaan" title="Menu kerjaan">⋮</button>':""}<div class="miniCardMeta"><span>${formatDate(d.task_date)}</span><span>${dd}/${di.length} selesai</span></div><div class="miniProgress"><div class="miniProgressFill" style="width:${pct}%"></div></div></div><div class="taskCard"></div>`;
       const card=sec.querySelector(".taskCard");
       if(canAdmin()){const menuBtn=sec.querySelector(".jobMenuBtn");menuBtn.onclick=e=>{e.preventDefault();e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const menu=document.createElement("div");menu.className="jobMenu";menu.innerHTML='<button type="button" data-act="dup">Duplicate</button><button type="button" data-act="edit">Edit nama & tanggal</button><button type="button" data-act="del" class="danger">Hapus</button>';sec.appendChild(menu);menu.querySelector('[data-act="dup"]').onclick=e=>{e.stopPropagation();menu.remove();duplicateJob(di)};menu.querySelector('[data-act="edit"]').onclick=e=>{e.stopPropagation();menu.remove();openJobEdit(di)};menu.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();menu.remove();deleteJobGroup(di)}}}
-      di.forEach(t=>{const row=document.createElement("div");row.className="task";row.innerHTML=`<button class="check ${t.completed?"done":""}" aria-label="${t.completed?"Batalkan":"Selesaikan"}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}</div></div>${canAdmin()?'<div class="actions"><button class="actionBtn editBtn" title="Edit output">✎</button><button class="actionBtn deleteBtn" title="Hapus output">×</button></div>':""}`;row.querySelector(".check").onclick=()=>toggle(t);if(canAdmin()){row.querySelector(".editBtn").onclick=()=>openEdit(t);row.querySelector(".deleteBtn").onclick=()=>deleteTask(t)}card.appendChild(row)});root.appendChild(sec)});
+      di.forEach(t=>{
+        const row=document.createElement("div");
+        row.className="task";
+        row.dataset.taskId=String(t.id);
+        row.innerHTML=`<button class="check ${t.completed?"done":""}" aria-label="${t.completed?"Batalkan":"Selesaikan"}"></button><div class="title ${t.completed?"doneText":""}">${esc(t.title)}<div class="taskSub">${esc(t.pic||"PIC belum ditentukan")}</div></div>${canAdmin()?'<div class="actions"><button class="actionBtn editBtn" title="Edit output">✎</button><button class="actionBtn deleteBtn" title="Hapus output">×</button></div>':""}`;
+        row.querySelector(".check").onclick=()=>toggle(t);
+        if(canAdmin()){
+          row.querySelector(".editBtn").onclick=()=>openEdit(t);
+          row.querySelector(".deleteBtn").onclick=()=>deleteTask(t);
+        }
+        card.appendChild(row);
+      });
+      sec.dataset.groupKey=key;
+      root.appendChild(sec)
+    });
     if(!shown){const empty=document.createElement("div");empty.className="miniCardEmpty";empty.textContent="Belum ada kerjaan di folder ini / tidak ada yang cocok dengan filter.";root.appendChild(empty)}
   }
   $("projectSearch").oninput=renderMiniCards;$("projectFilter").onchange=renderMiniCards;renderMiniCards();
@@ -1472,35 +1486,34 @@ async function toggle(t){
   if(currentProject) openProject(currentProject);
 }
 
+function taskGroupKey(t){
+  return `${t.task_date||""}|${jobNameOf(t)}`;
+}
+
 function updateTaskRowUI(t){
-  const rows=document.querySelectorAll('.task');
-  rows.forEach(row=>{
-    const btn=row.querySelector('.check');
-    if(!btn)return;
-    const title=row.querySelector('.title');
-    const titleText=(title?.firstChild?.textContent||'').trim();
-    if(titleText!==String(t.title||'').trim())return;
-    btn.classList.toggle('done',Boolean(t.completed));
-    btn.setAttribute('aria-label',t.completed?'Batalkan':'Selesaikan');
-    title.classList.toggle('doneText',Boolean(t.completed));
-  });
+  const row=document.querySelector(`.task[data-task-id="${CSS.escape(String(t.id))}"]`);
+  if(!row)return;
+  const btn=row.querySelector('.check');
+  const title=row.querySelector('.title');
+  if(!btn||!title)return;
+  btn.classList.toggle('done',Boolean(t.completed));
+  btn.setAttribute('aria-label',t.completed?'Batalkan':'Selesaikan');
+  title.classList.toggle('doneText',Boolean(t.completed));
 }
 
 function updateMiniCardUI(t){
-  const name=jobNameOf(t);
-  document.querySelectorAll('.miniCard').forEach(card=>{
-    const title=card.querySelector('.miniCardTitle');
-    if(!title || title.textContent.trim()!==name)return;
-    const related=tasks.filter(x=>jobNameOf(x)===name);
-    const done=related.filter(x=>x.completed).length;
-    const meta=card.querySelector('.miniCardMeta');
-    if(meta){
-      const spans=meta.querySelectorAll('span');
-      if(spans[1])spans[1].textContent=`${done}/${related.length} selesai`;
-    }
-    const fill=card.querySelector('.miniProgressFill');
-    if(fill)fill.style.width=(related.length?Math.round(done/related.length*100):0)+'%';
-  });
+  const key=taskGroupKey(t);
+  const card=document.querySelector(`.miniCard[data-group-key="${CSS.escape(key)}"]`);
+  if(!card)return;
+  const related=tasks.filter(x=>taskGroupKey(x)===key);
+  const done=related.filter(x=>Boolean(x.completed)).length;
+  const meta=card.querySelector('.miniCardMeta');
+  if(meta){
+    const spans=meta.querySelectorAll('span');
+    if(spans[1])spans[1].textContent=`${done}/${related.length} selesai`;
+  }
+  const fill=card.querySelector('.miniProgressFill');
+  if(fill)fill.style.width=(related.length?Math.round(done/related.length*100):0)+'%';
 }
 
 function openTaskModal(date){
