@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#09090f">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<title>p3nabi'studio — Team Workspace v4</title>
+<title>p3nabi'studio — Team Workspace v5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -865,10 +865,12 @@ async function loadCurrentWorkspaceMembers(){
 
  if(r.error){
    console.error("Team members load error:",r.error);
+   // Keep the membership already obtained by loadWorkspaceContext().
+   // This still lets the current user's own card render instead of blanking Team.
+   renderTeam();
    return false;
  }
 
- // Replace only the membership cache for the active workspace.
  workspaceMembers=workspaceMembers
    .filter(m=>m.workspace_id!==currentWorkspaceId)
    .concat(r.data||[]);
@@ -962,6 +964,17 @@ async function loadTasks(){
     renderAll();
   }
 }
+async function loadTeam(){
+  if(!currentWorkspaceId){
+    renderTeam();
+    return;
+  }
+
+  await loadCurrentWorkspaceMembers();
+  await loadProfiles();
+  renderTeam();
+}
+
 async function loadProfiles(){
   const ids=[...new Set(
     workspaceMembers
@@ -1312,11 +1325,19 @@ function renderTeam(){
  const box=$("teamGrid");
  box.innerHTML="";
  const members=workspaceMembers.filter(m=>m.workspace_id===currentWorkspaceId);
- if(!members.length){box.innerHTML='<div class="empty">Belum ada anggota di workspace ini.</div>';return}
+ if(!members.length){
+   box.innerHTML='<div class="empty">Belum ada anggota di workspace ini.<br><small style="opacity:.7">Jika data member ada di Supabase tetapi tetap kosong, cek RLS SELECT pada tabel workspace_members.</small></div>';
+   return;
+ }
  const byId=new Map(profiles.map(p=>[p.id,p]));
  members.forEach(m=>{
    const p=byId.get(m.user_id)||{id:m.user_id,username:"User",jobdesk:"Jobdesk belum diisi"};
-   const ts=tasks.filter(t=>(t.pic||"").trim()===p.username),done=ts.filter(t=>t.completed).length,pct=ts.length?Math.round(done/ts.length*100):0;
+   const ts=tasks.filter(t=>
+     t.workspace_id===currentWorkspaceId &&
+     (t.pic||"").trim()===p.username
+   );
+   const done=ts.filter(t=>t.completed).length;
+   const pct=ts.length?Math.round(done/ts.length*100):0;
    const c=document.createElement("div");
    c.className="panel teamCard";
    c.innerHTML=`
