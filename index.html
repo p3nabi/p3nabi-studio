@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#09090f">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<title>p3nabi'studio — Team Workspace</title>
+<title>p3nabi'studio — Team Workspace v4</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -306,7 +306,7 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
 .folderCard{overflow:visible}.folderCard .folderDots{z-index:5;border:0;background:transparent;padding:0;width:28px;height:28px;display:grid;place-items:center;border-radius:8px}.folderCard .folderDots:hover{background:#272531;color:#fff}
 
 .historyTabs{display:flex;gap:8px;margin:0 0 14px}.historyTab{border:1px solid var(--line);background:#14141b;color:#aaa6b3;border-radius:10px;padding:9px 14px;cursor:pointer}.historyTab.active{color:#fff;background:#24202c;border-color:#4a3a5a}.historyGrid{display:grid;gap:10px}.historyItem{border:1px solid var(--line);background:#121219;border-radius:14px;padding:15px 16px;display:flex;align-items:center;gap:14px}.historyIcon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#24202c;font-size:18px;flex:0 0 auto}.historyMain{min-width:0;flex:1}.historyTitle{font-weight:800}.historyMeta{font-size:11px;color:#85818d;margin-top:4px}.historyAction{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#aaa6b3;margin-bottom:4px}.historyEmpty{border:1px dashed #393441;border-radius:14px;padding:28px;text-align:center;color:#77737f}
-</style>
+.addOutputBtn{border:1px solid #9b4dff;background:rgba(155,77,255,.08);color:#c98cff;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:750;cursor:pointer;white-space:nowrap}.addOutputBtn:hover{background:rgba(155,77,255,.16)}</style>
 </head>
 <body>
 <div id="login" class="modal">
@@ -1280,9 +1280,13 @@ function openProject(folderId){
   function renderMiniCards(){
     root.querySelectorAll(".miniCard,.miniCardEmpty").forEach(el=>el.remove());const search=$("projectSearch")?.value||"",filter=$("projectFilter")?.value||"all";let shown=0;
     groupEntries.forEach(([key,di])=>{if(!groupMatches(di,search,filter))return;shown++;const d=di[0],dd=di.filter(x=>x.completed).length,pct=di.length?Math.round(dd/di.length*100):0,name=jobNameOf(d);const sec=document.createElement("section");sec.className="miniCard";
-      sec.innerHTML=`<div class="miniCardHead"><h3 class="miniCardTitle">${esc(name)}</h3>${canAdmin()?'<button type="button" class="jobMenuBtn" aria-label="Menu kerjaan" title="Menu kerjaan">⋮</button>':""}<div class="miniCardMeta"><span>${formatDate(d.task_date)}</span><span>${dd}/${di.length} selesai</span></div><div class="miniProgress"><div class="miniProgressFill" style="width:${pct}%"></div></div></div><div class="taskCard"></div>`;
+      sec.innerHTML=`<div class="miniCardHead"><div style="display:flex;align-items:center;gap:7px;min-width:0"><h3 class="miniCardTitle">${esc(name)}</h3>${canAdmin()?'<button type="button" class="addOutputBtn" aria-label="Tambah output" title="Tambah output">＋ Output</button>':""}${canAdmin()?'<button type="button" class="jobMenuBtn" aria-label="Menu kerjaan" title="Menu kerjaan">⋮</button>':""}</div><div class="miniCardMeta"><span>${formatDate(d.task_date)}</span><span>${dd}/${di.length} selesai</span></div><div class="miniProgress"><div class="miniProgressFill" style="width:${pct}%"></div></div></div><div class="taskCard"></div>`;
       const card=sec.querySelector(".taskCard");
-      if(canAdmin()){const menuBtn=sec.querySelector(".jobMenuBtn");menuBtn.onclick=e=>{e.preventDefault();e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const menu=document.createElement("div");menu.className="jobMenu";menu.innerHTML='<button type="button" data-act="dup">Duplicate</button><button type="button" data-act="edit">Edit nama & tanggal</button><button type="button" data-act="del" class="danger">Hapus</button>';sec.appendChild(menu);menu.querySelector('[data-act="dup"]').onclick=e=>{e.stopPropagation();menu.remove();duplicateJob(di)};menu.querySelector('[data-act="edit"]').onclick=e=>{e.stopPropagation();menu.remove();openJobEdit(di)};menu.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();menu.remove();deleteJobGroup(di)}}}
+      if(canAdmin()){
+        const addOutputBtn=sec.querySelector(".addOutputBtn");
+        if(addOutputBtn)addOutputBtn.onclick=e=>{e.preventDefault();e.stopPropagation();openOutputModal(di)};
+        const menuBtn=sec.querySelector(".jobMenuBtn");
+        if(menuBtn)menuBtn.onclick=e=>{e.preventDefault();e.stopPropagation();document.querySelectorAll(".jobMenu").forEach(x=>x.remove());const menu=document.createElement("div");menu.className="jobMenu";menu.innerHTML='<button type="button" data-act="dup">Duplicate</button><button type="button" data-act="edit">Edit nama & tanggal</button><button type="button" data-act="del" class="danger">Hapus</button>';sec.appendChild(menu);menu.querySelector('[data-act="dup"]').onclick=e=>{e.stopPropagation();menu.remove();duplicateJob(di)};menu.querySelector('[data-act="edit"]').onclick=e=>{e.stopPropagation();menu.remove();openJobEdit(di)};menu.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();menu.remove();deleteJobGroup(di)}}}
       di.forEach(t=>{
         const row=document.createElement("div");
         row.className="task";
@@ -1463,10 +1467,16 @@ async function toggle(t){
   renderDashboard();
   renderFolders();
 
-  const {error}=await sb.rpc("toggle_task_checklist",{
-    target_task_id:t.id,
-    new_completed:next
-  });
+  // Update EXACTLY this output by primary key. Never update by title/date/group.
+  // This prevents an output in one minicard from changing matching outputs elsewhere.
+  const {error}=await sb.from("tasks")
+    .update({
+      completed:next,
+      completed_by:next?user.id:null,
+      completed_at:next?new Date().toISOString():null
+    })
+    .eq("id",t.id)
+    .eq("workspace_id",currentWorkspaceId);
 
   pendingToggleIds.delete(id);
   if(error){
@@ -1562,6 +1572,19 @@ $("folderSave").onclick=async()=>{
   if(editingFolder){folders=folders.map(f=>f.id===editingFolder.id?{...f,name,description:description||null}:f);}else if(result.data)folders.push(result.data);
   closeFolderModal();renderFolders();
 };
+function openOutputModal(items){
+  if(!canAdmin()||!currentProject||!items?.length)return;
+  const source=items[0];
+  $("newDate").value=source.task_date||"";
+  $("newLabel").value=jobNameOf(source)||"";
+  $("newTitle").value="";
+  $("newProject").value=source.project_name||"";
+  fillPicSelect("newPic",source.pic||"");
+  $("taskErr").textContent="";
+  $("taskModal").classList.remove("hide");
+  $("newTitle").focus();
+}
+
 function openTaskModal(date){
   if(!canAdmin()||!currentProject){alert("Buat dan buka folder terlebih dahulu sebelum menambah kerjaan.");return;}
   $("newDate").value=date;$("newLabel").value="";$("newTitle").value="";$("newProject").value="";fillPicSelect("newPic","");$("taskErr").textContent="";$("taskModal").classList.remove("hide");$("newTitle").focus();
