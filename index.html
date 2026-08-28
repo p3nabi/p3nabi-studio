@@ -434,7 +434,7 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
     </section>
 
     <section id="page-history" class="page">
-      <div class="sectionHead"><div><h2>History</h2><p>Riwayat aktivitas dan folder yang masuk Sampah di workspace ini.</p></div></div>
+      <div class="sectionHead"><div><h2>History</h2><p>Riwayat aktivitas dan folder yang masuk Sampah di workspace ini.</p></div><button class="secondary" id="refreshHistory" type="button">↻ Refresh</button></div>
       <div class="historyTabs"><button class="historyTab active" data-history-filter="trash">Sampah</button><button class="historyTab" data-history-filter="activity">Aktivitas</button></div>
       <div id="historyContent"></div>
     </section>
@@ -883,28 +883,35 @@ async function loadFolders(){
   if(!r.error){folders=r.data||[];}
 }
 async function loadHistory(){
-  if(!currentWorkspaceId)return;
-  const r=await sb.from("history").select("*").eq("workspace_id",currentWorkspaceId).order("created_at",{ascending:false}).limit(100);
+  if(!currentWorkspaceId){historyRows=[];return;}
+  const r=await sb.from("history").select("*").eq("workspace_id",currentWorkspaceId).order("created_at",{ascending:false}).limit(200);
   if(!r.error){historyRows=r.data||[];renderHistory();}
+}
+async function loadDeletedFolders(){
+  if(!currentWorkspaceId)return [];
+  const r=await sb.from("folders").select("*").eq("workspace_id",currentWorkspaceId).not("deleted_at","is",null).order("deleted_at",{ascending:false});
+  return r.error?[]:(r.data||[]);
 }
 function historyDate(v){return v?new Date(v).toLocaleString("id-ID",{dateStyle:"medium",timeStyle:"short"}):""}
 let historyRows=[];
 let historyFilter="trash";
-function renderHistory(){
-  const box=$("historyContent"); if(!box)return; box.innerHTML="";
+async function renderHistory(){
+  const box=$("historyContent"); if(!box)return;
+  box.innerHTML='<div class="historyEmpty">Memuat history...</div>';
   document.querySelectorAll(".historyTab").forEach(b=>b.classList.toggle("active",b.dataset.historyFilter===historyFilter));
-  if(historyFilter==="trash") {
-    const deleted=historyRows.filter(h=>h.item_type==="folder" && h.action==="delete");
+  if(historyFilter==="trash"){
+    const deleted=await loadDeletedFolders();
     if(!deleted.length){box.innerHTML='<div class="historyEmpty">Belum ada folder di Sampah workspace ini.</div>';return;}
     const grid=document.createElement("div");grid.className="historyGrid";
-    deleted.forEach(h=>{
+    deleted.forEach(f=>{
+      const itemCount=tasks.filter(t=>String(t.folder_id||"")===String(f.id)).length;
       const el=document.createElement("div");el.className="historyItem";
-      el.innerHTML=`<div class="historyIcon">🗑️</div><div class="historyMain"><div class="historyAction">Folder dihapus</div><div class="historyTitle">${esc(h.item_name||"Folder")}</div><div class="historyMeta">${historyDate(h.created_at)}</div></div>${canAdmin()?'<button class="secondary restoreFolderBtn" type="button">↩ Pulihkan</button>':""}`;
-      const btn=el.querySelector(".restoreFolderBtn"); if(btn)btn.onclick=()=>restoreFolder(h.item_id);
+      el.innerHTML=`<div class="historyIcon">🗑️</div><div class="historyMain"><div class="historyAction">Folder dihapus</div><div class="historyTitle">${esc(f.name||"Folder")}</div><div class="historyMeta">${itemCount} pekerjaan · ${historyDate(f.deleted_at)}</div></div>${canAdmin()?'<button class="secondary restoreFolderBtn" type="button">↩ Pulihkan</button>':''}`;
+      const btn=el.querySelector(".restoreFolderBtn");if(btn)btn.onclick=()=>restoreFolder(f.id);
       grid.appendChild(el);
     });
     box.appendChild(grid);
-  } else {
+  }else{
     if(!historyRows.length){box.innerHTML='<div class="historyEmpty">Belum ada aktivitas di workspace ini.</div>';return;}
     const grid=document.createElement("div");grid.className="historyGrid";
     historyRows.forEach(h=>{const el=document.createElement("div");el.className="historyItem";el.innerHTML=`<div class="historyIcon">${h.action==="delete"?"🗑️":h.action==="restore"?"↩️":"•"}</div><div class="historyMain"><div class="historyAction">${esc(h.action||"Aktivitas")} · ${esc(h.item_type||"")}</div><div class="historyTitle">${esc(h.item_name||"Tanpa nama")}</div><div class="historyMeta">${historyDate(h.created_at)}</div></div>`;grid.appendChild(el)});box.appendChild(grid);
@@ -917,7 +924,7 @@ async function restoreFolder(folderId){
   if(error){alert("Folder gagal dipulihkan: "+error.message);return;}
   if(data===false){alert("Folder tidak ditemukan atau sudah dipulihkan.");return;}
   await Promise.all([loadFolders(),loadTasks(),loadHistory()]);
-  renderFolders();renderHistory();
+  renderFolders();await renderHistory();
 }
 
 async function loadTasks(){
@@ -1400,7 +1407,8 @@ $("taskCancel").onclick=closeTaskModal;$("taskModal").onclick=e=>{if(e.target.id
 $("taskSave").onclick=async()=>{if(!canAdmin())return;if(!currentProject){$("taskErr").textContent="Buka folder terlebih dahulu.";return}const date=$("newDate").value,label=$("newLabel").value.trim(),title=$("newTitle").value.trim(),project=$("newProject").value.trim(),pic=$("newPic").value.trim();if(!date||!title){$("taskErr").textContent="Tanggal dan nama pekerjaan wajib diisi.";return}const {error}=await sb.from("tasks").insert({task_date:date,batch_label:label||null,title,project_name:project||null,pic:pic||null,workspace_id:currentWorkspaceId,folder_id:currentProject,created_by:user.id});if(error)$("taskErr").textContent=error.message;else{closeTaskModal();await loadTasks();openProject(currentProject)}}
 
 
-document.querySelectorAll(".historyTab").forEach(btn=>btn.onclick=()=>{historyFilter=btn.dataset.historyFilter||"trash";renderHistory()});
+document.querySelectorAll(".historyTab").forEach(btn=>btn.onclick=async()=>{historyFilter=btn.dataset.historyFilter||"trash";await renderHistory()});
+$("refreshHistory").onclick=async()=>{await loadHistory();await renderHistory()};
 function setPage(page){if(!canAdmin() && !["folders","calendar","team","history","settings"].includes(page)) page="folders";currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
  if(page==="folders"){$("pageTitle").textContent="Kerjaan";$("pageSub").textContent="Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan."}
