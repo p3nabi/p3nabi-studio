@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#09090f">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<title>p3nabi'studio — Team Workspace v7</title>
+<title>p3nabi'studio — Live PIC Recap v9</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -393,7 +393,16 @@ body.workspaceSky{background:radial-gradient(circle at 75% -5%,#102b3a 0,transpa
       <div class="sectionHead"><div><h2>Recap Project</h2><p>Ringkasan project dan total pekerjaan untuk tahun yang dipilih.</p></div></div>
       <div class="recapGrid">
         <div class="panel recapCard"><div class="recapTitle">Ringkasan Tahun</div><div id="yearProjects" class="yearProjects"></div><div id="projectTable" class="projectTable"></div></div>
-        <div class="panel recapCard"><div class="recapTitle">Total masing-masing PIC</div><div id="picList" class="picList"></div></div>
+        <div class="panel recapCard">
+          <div class="recapTitle" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <span>Live Tracking PIC</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="picMonthSelect" class="yearSelect" aria-label="Pilih bulan recap PIC"></select>
+            </div>
+          </div>
+          <div id="picMonthSummary" class="muted" style="margin:6px 0 12px"></div>
+          <div id="picList" class="picList"></div>
+        </div>
       </div>
     </section>
 
@@ -1035,11 +1044,40 @@ function applyPermissions(){
 
 function fillYears(){
  const ys=years();if(!ys.length)ys=[String(new Date().getFullYear())];
- const old=$("yearSelect").value;$("yearSelect").innerHTML=ys.map(y=>`<option value="${y}">${y}</option>`).join("");$("yearSelect").value=ys.includes(old)?old:ys[0];
+ const old=$("yearSelect").value;
+ $("yearSelect").innerHTML=ys.map(y=>`<option value="${y}">${y}</option>`).join("");
+ $("yearSelect").value=ys.includes(old)?old:ys[0];
+ fillPicMonths();
 }
-$("yearSelect").onchange=renderDashboard;
+
+function fillPicMonths(){
+ const sel=$("picMonthSelect");
+ if(!sel)return;
+ const old=sel.value;
+ const months=[
+   ["01","Januari"],["02","Februari"],["03","Maret"],["04","April"],
+   ["05","Mei"],["06","Juni"],["07","Juli"],["08","Agustus"],
+   ["09","September"],["10","Oktober"],["11","November"],["12","Desember"]
+ ];
+ sel.innerHTML=months.map(([m,n])=>`<option value="${m}">${n}</option>`).join("");
+ // Prefer the currently selected month; otherwise use the latest month
+ // represented by the selected year, falling back to the current month.
+ const selectedYear=$("yearSelect")?.value||String(new Date().getFullYear());
+ const available=tasks
+   .filter(t=>yearOf(t)===selectedYear && t.task_date)
+   .map(t=>String(t.task_date).slice(5,7))
+   .filter(Boolean);
+ const fallback=available.length
+   ? available.sort().at(-1)
+   : String(new Date().getMonth()+1).padStart(2,"0");
+ sel.value=months.some(([m])=>m===old)?old:fallback;
+}
+
+$("yearSelect").onchange=()=>{fillPicMonths();renderDashboard();};
+$("picMonthSelect").onchange=renderDashboard;
 
 function renderDashboard(){
+ if($("picMonthSelect")&&!$("picMonthSelect").options.length)fillPicMonths();
  const total=tasks.length,done=tasks.filter(t=>t.completed).length,pct=total?Math.round(done/total*100):0,y=currentYear(),yt=tasks.filter(t=>yearOf(t)===y);
  const namedProjects=[...new Set(yt.map(projectName).filter(x=>x!=="Belum ditentukan"))];
  const pics=[...new Set(yt.map(t=>(t.pic||"").trim()).filter(Boolean))];
@@ -1049,8 +1087,63 @@ function renderDashboard(){
  const projectMap={};yt.forEach(t=>{const n=projectName(t);(projectMap[n]??={tasks:0,done:0,pics:new Set()});projectMap[n].tasks++;if(t.completed)projectMap[n].done++;if(t.pic)projectMap[n].pics.add(t.pic)});
  const pt=$("projectTable");pt.innerHTML=`<div class="tableRow tableHead"><span>Project</span><span>PIC</span><span class="right">Task</span><span class="right">Done</span></div>`;
  Object.entries(projectMap).sort((a,b)=>b[1].tasks-a[1].tasks).forEach(([n,v])=>{const row=document.createElement("div");row.className="tableRow";row.innerHTML=`<b>${esc(n)}</b><span class="muted">${esc([...v.pics].join(", ")||"Belum ditentukan")}</span><span class="right">${v.tasks}</span><span class="right">${v.done}/${v.tasks}</span>`;pt.appendChild(row)});
- const picMap={};yt.forEach(t=>{const n=(t.pic||"").trim()||"Belum ditentukan";(picMap[n]??={tasks:0,done:0,projects:new Set()});picMap[n].tasks++;if(t.completed)picMap[n].done++;picMap[n].projects.add(projectName(t))});
- const pl=$("picList");pl.innerHTML="";Object.entries(picMap).sort((a,b)=>b[1].tasks-a[1].tasks).forEach(([n,v])=>{const prof=profiles.find(p=>p.username===n);const row=document.createElement("div");row.className="picRow";row.innerHTML=`<div class="avatar">${avatarHtml(prof||{username:n})}</div><div><div class="picName">${esc(n)}</div><div class="picMeta">${v.projects.size} project · ${v.done}/${v.tasks} selesai</div></div><div class="picCount">${v.tasks}</div>`;pl.appendChild(row)});if(!pl.children.length)pl.innerHTML='<div class="empty">Belum ada data PIC.</div>';
+ const picMonth=($("picMonthSelect")?.value||String(new Date().getMonth()+1).padStart(2,"0"));
+
+ // LIVE MONTHLY PIC TRACKING:
+ // - Source = every task in the active workspace.
+ // - Month = task_date.
+ // - PIC = pic.
+ // - Status = completed.
+ // - folder_id is intentionally NOT used.
+ const monthlyTasks=tasks.filter(t=>
+   t.workspace_id===currentWorkspaceId &&
+   String(t.task_date||"").slice(0,4)===String(y) &&
+   String(t.task_date||"").slice(5,7)===picMonth
+ );
+
+ const picMap={};
+ monthlyTasks.forEach(t=>{
+   const n=(t.pic||"").trim()||"Belum ditentukan";
+   (picMap[n]??={tasks:0,done:0,projects:new Set()});
+   picMap[n].tasks++;
+   if(t.completed)picMap[n].done++;
+   picMap[n].projects.add(projectName(t));
+ });
+
+ const monthNames=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+ const monthName=monthNames[Number(picMonth)-1]||picMonth;
+ const pms=$("picMonthSummary");
+ if(pms)pms.textContent=`Live recap · ${monthName} ${y} · berdasarkan tanggal kerja, bukan folder`;
+
+ const pl=$("picList");
+ pl.innerHTML="";
+
+ Object.entries(picMap)
+   .sort((a,b)=>b[1].tasks-a[1].tasks||a[0].localeCompare(b[0]))
+   .forEach(([n,v])=>{
+     const prof=profiles.find(p=>p.username===n);
+     const pct=v.tasks?Math.round(v.done/v.tasks*100):0;
+     const remaining=v.tasks-v.done;
+     const row=document.createElement("div");
+     row.className="picRow";
+     row.innerHTML=`
+       <div class="avatar">${avatarHtml(prof||{username:n})}</div>
+       <div style="flex:1;min-width:0">
+         <div class="picName">${esc(n)}</div>
+         <div class="picMeta">${v.projects.size} project · ${v.done} selesai · ${remaining} tersisa</div>
+         <div style="height:5px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:7px;overflow:hidden">
+           <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#a855f7,#c084fc);border-radius:99px"></div>
+         </div>
+       </div>
+       <div style="text-align:right;min-width:70px">
+         <div class="picCount">${v.tasks}</div>
+         <div class="muted" style="font-size:11px">${pct}%</div>
+       </div>`;
+     pl.appendChild(row);
+   });
+
+ if(!pl.children.length)
+   pl.innerHTML=`<div class="empty">Belum ada pekerjaan/PIC pada ${monthName} ${y}.</div>`;
 }
 
 function visibleTasks(){
