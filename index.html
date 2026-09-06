@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#09090f">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<title>p3nabi'studio — Live PIC Recap v11</title>
+<title>p3nabi'studio — Live PIC Recap v12</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -1119,66 +1119,75 @@ function renderDashboard(){
  Object.entries(projectMap).sort((a,b)=>b[1].tasks-a[1].tasks).forEach(([n,v])=>{const row=document.createElement("div");row.className="tableRow";row.innerHTML=`<b>${esc(n)}</b><span class="muted">${esc([...v.pics].join(", ")||"Belum ditentukan")}</span><span class="right">${v.tasks}</span><span class="right">${v.done}/${v.tasks}</span>`;pt.appendChild(row)});
  const picMonth=($("picMonthSelect")?.value||String(new Date().getMonth()+1).padStart(2,"0"));
 
- // LIVE MONTHLY PIC TRACKING:
- // A monthly team recap should follow the month in which the work happened,
- // not the folder/month label. Therefore:
- // - task_date in the selected month = work scheduled for that month.
- // - completed_at in the selected month = work actually completed that month.
- // - A task is included when either date belongs to the selected month.
- // - folder_id is intentionally NOT used.
- // This means checking an older task today immediately makes it visible in
- // the current month's recap because completed_at becomes today's timestamp.
+ // LIVE MONTHLY PIC RECAP:
+ // "Dikerjakan bulan ini" = tasks actually completed in the selected month,
+ // based on completed_at. This is the number useful for a monthly team recap.
+ // "Tersisa" = currently incomplete tasks assigned to that PIC in the active
+ // workspace, regardless of folder/month, so outstanding work is never hidden
+ // just because its task_date belongs to an earlier/later month.
+ // folder_id is intentionally NOT used.
  const monthKey=`${String(y)}-${picMonth}`;
- const monthlyTasks=tasks.filter(t=>{
+ const completedThisMonth=tasks.filter(t=>{
    if(t.workspace_id!==currentWorkspaceId)return false;
-   const scheduledMonth=String(t.task_date||"").slice(0,7);
-   const completedMonth=String(t.completed_at||"").slice(0,7);
-   return scheduledMonth===monthKey || completedMonth===monthKey;
+   return String(t.completed_at||"").slice(0,7)===monthKey && t.completed===true;
+ });
+ const remainingByPic=tasks.filter(t=>{
+   if(t.workspace_id!==currentWorkspaceId)return false;
+   return t.completed!==true;
  });
 
  const picMap={};
- monthlyTasks.forEach(t=>{
+ completedThisMonth.forEach(t=>{
    const n=(t.pic||"").trim()||"Belum ditentukan";
-   (picMap[n]??={tasks:0,done:0,projects:new Set()});
-   picMap[n].tasks++;
-   if(t.completed)picMap[n].done++;
+   (picMap[n]??={doneThisMonth:0,remaining:0,projects:new Set()});
+   picMap[n].doneThisMonth++;
+   picMap[n].projects.add(projectName(t));
+ });
+ remainingByPic.forEach(t=>{
+   const n=(t.pic||"").trim()||"Belum ditentukan";
+   (picMap[n]??={doneThisMonth:0,remaining:0,projects:new Set()});
+   picMap[n].remaining++;
    picMap[n].projects.add(projectName(t));
  });
 
  const monthNames=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
  const monthName=monthNames[Number(picMonth)-1]||picMonth;
  const pms=$("picMonthSummary");
- if(pms)pms.textContent=`Live recap · ${monthName} ${y} · tanggal kerja + pekerjaan yang selesai bulan ini`;
+ if(pms)pms.textContent=`${monthName} ${y} · selesai bulan ini + sisa tasking saat ini · berdasarkan PIC, bukan folder`;
 
  const pl=$("picList");
  pl.innerHTML="";
 
  Object.entries(picMap)
-   .sort((a,b)=>b[1].tasks-a[1].tasks||a[0].localeCompare(b[0]))
+   .sort((a,b)=>
+     (b[1].doneThisMonth-b[1].doneThisMonth) ||
+     (b[1].remaining-a[1].remaining) ||
+     a[0].localeCompare(b[0])
+   )
    .forEach(([n,v])=>{
      const prof=profiles.find(p=>p.username===n);
-     const pct=v.tasks?Math.round(v.done/v.tasks*100):0;
-     const remaining=v.tasks-v.done;
+     const total=v.doneThisMonth+v.remaining;
+     const pct=total?Math.round(v.doneThisMonth/total*100):0;
      const row=document.createElement("div");
      row.className="picRow";
      row.innerHTML=`
        <div class="avatar">${avatarHtml(prof||{username:n})}</div>
        <div style="flex:1;min-width:0">
          <div class="picName">${esc(n)}</div>
-         <div class="picMeta">${v.projects.size} project · ${v.done} selesai · ${remaining} tersisa</div>
+         <div class="picMeta">${v.doneThisMonth} selesai bulan ini · ${v.remaining} tersisa · ${v.projects.size} project</div>
          <div style="height:5px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:7px;overflow:hidden">
            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#a855f7,#c084fc);border-radius:99px"></div>
          </div>
        </div>
-       <div style="text-align:right;min-width:70px">
-         <div class="picCount">${v.tasks}</div>
-         <div class="muted" style="font-size:11px">${pct}%</div>
+       <div style="text-align:right;min-width:90px">
+         <div class="picCount">${v.doneThisMonth}</div>
+         <div class="muted" style="font-size:11px">bulan ini · ${pct}%</div>
        </div>`;
      pl.appendChild(row);
    });
 
  if(!pl.children.length)
-   pl.innerHTML=`<div class="empty">Belum ada pekerjaan/PIC pada ${monthName} ${y}.</div>`;
+   pl.innerHTML=`<div class="empty">Belum ada data PIC pada ${monthName} ${y}.</div>`;
 }
 
 function visibleTasks(){
