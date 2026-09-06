@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#09090f">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<title>p3nabi'studio — Live PIC Recap v9</title>
+<title>p3nabi'studio — Live PIC Recap v10</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -887,9 +887,15 @@ async function loadAll(){
  await loadCurrentWorkspaceMembers();
  await Promise.all([loadFolders(),loadTasks(),loadProfiles(),loadAgendas(),loadHistory()]);
  renderAll();renderCalendar();renderSettings();
+ if(currentPage==="dashboard")startDashboardLiveTracking();
  if(!realtimeChannel){
   realtimeChannel=sb.channel("workspace-live")
-   .on("postgres_changes",{event:"*",schema:"public",table:"tasks",filter:`workspace_id=eq.${currentWorkspaceId}`},async()=>{await loadTasks();})
+   .on("postgres_changes",{event:"*",schema:"public",table:"tasks",filter:`workspace_id=eq.${currentWorkspaceId}`},async()=>{
+      await loadTasks();
+      renderDashboard();
+      renderFolders();
+      renderTeam();
+   })
    .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},async()=>{await loadProfiles();})
    .on("postgres_changes",{event:"*",schema:"public",table:"workspace_members",filter:`workspace_id=eq.${currentWorkspaceId}`},async()=>{
       await loadCurrentWorkspaceMembers();
@@ -904,6 +910,30 @@ async function loadAll(){
    .subscribe();
  }
 }
+let dashboardPollTimer=null;
+let dashboardPollBusy=false;
+
+function startDashboardLiveTracking(){
+  if(dashboardPollTimer)clearInterval(dashboardPollTimer);
+  dashboardPollTimer=setInterval(async()=>{
+    if(typeof currentPage==="undefined" || currentPage!=="dashboard" || !currentWorkspaceId || dashboardPollBusy)return;
+    dashboardPollBusy=true;
+    try{
+      await loadTasks();
+      renderDashboard();
+    }finally{
+      dashboardPollBusy=false;
+    }
+  },5000);
+}
+
+function stopDashboardLiveTracking(){
+  if(dashboardPollTimer){
+    clearInterval(dashboardPollTimer);
+    dashboardPollTimer=null;
+  }
+}
+
 async function ensureProfile(){
  const {data}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
  if(!data){
@@ -1706,7 +1736,9 @@ $("taskSave").onclick=async()=>{if(!canAdmin())return;if(!currentProject){$("tas
 
 document.querySelectorAll(".historyTab").forEach(btn=>btn.onclick=async()=>{historyFilter=btn.dataset.historyFilter||"trash";await renderHistory()});
 $("refreshHistory").onclick=async()=>{await loadHistory();await renderHistory()};
-function setPage(page){if(!canAdmin() && !["folders","calendar","team","history","settings"].includes(page)) page="folders";currentPage=page;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
+function setPage(page){if(!canAdmin() && !["folders","calendar","team","history","settings"].includes(page)) page="folders";currentPage=page;
+ if(page==="dashboard")startDashboardLiveTracking();else stopDashboardLiveTracking();
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
  if(page==="folders"){$("pageTitle").textContent="Kerjaan";$("pageSub").textContent="Semua checklist pekerjaan tim, dikelompokkan berdasarkan bulan."}
  if(page==="calendar"){$("pageTitle").textContent="Calendar";$("pageSub").textContent="Agenda dan tanggal penting tim."}
