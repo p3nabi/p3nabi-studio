@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#09090f">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<title>p3nabi'studio — Live PIC Recap v12</title>
+<title>p3nabi'studio — Employee Dashboard v13</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -1106,8 +1106,99 @@ function fillPicMonths(){
 $("yearSelect").onchange=()=>{fillPicMonths();renderDashboard();};
 $("picMonthSelect").onchange=renderDashboard;
 
+function currentWorkspaceRole(){
+  const meId=(authUser?.id||"").toString();
+  const m=workspaceMembers.find(x=>
+    String(x.workspace_id)===String(currentWorkspaceId) &&
+    String(x.user_id)===meId
+  );
+  return m?.role||null;
+}
+
+function isEmployee(){
+  return currentWorkspaceRole()==="employee";
+}
+
+function currentUsername(){
+  const meId=(authUser?.id||"").toString();
+  const p=profiles.find(x=>String(x.id)===meId);
+  return p?.username||authUser?.user_metadata?.username||"";
+}
+
+function renderEmployeeDashboard(){
+  const y=$("yearSelect")?.value||String(new Date().getFullYear());
+  const month=($("picMonthSelect")?.value||String(new Date().getMonth()+1).padStart(2,"0"));
+  const monthKey=`${y}-${month}`;
+  const me=currentUsername();
+
+  const mine=tasks.filter(t=>
+    t.workspace_id===currentWorkspaceId &&
+    (t.pic||"").trim()===me
+  );
+
+  const completedThisMonth=mine.filter(t=>
+    t.completed===true &&
+    String(t.completed_at||"").slice(0,7)===monthKey
+  ).length;
+
+  const remaining=mine.filter(t=>t.completed!==true).length;
+  const total=completedThisMonth+remaining;
+  const pct=total?Math.round(completedThisMonth/total*100):0;
+
+  const monthNames=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  const monthName=monthNames[Number(month)-1]||month;
+
+  // Reuse the existing dashboard shell but replace the KPI values with
+  // the employee's own live workload.
+  const progressTitle=document.querySelector(".kpiCard .kpiLabel");
+  const kpis=document.querySelectorAll(".kpiCard");
+  if(kpis.length>=3){
+    kpis[0].querySelector(".kpiValue").textContent=`${pct}%`;
+    kpis[0].querySelector(".kpiSub").textContent=`${completedThisMonth} selesai bulan ini · ${remaining} tersisa`;
+    const bar=kpis[0].querySelector(".progressFill");
+    if(bar)bar.style.width=`${pct}%`;
+
+    kpis[1].querySelector(".kpiValue").textContent=String(new Set(mine.map(t=>projectName(t))).size);
+    kpis[1].querySelector(".kpiSub").textContent=`${mine.length} tasking saya`;
+
+    kpis[2].querySelector(".kpiValue").textContent="1";
+    kpis[2].querySelector(".kpiSub").textContent="profil saya";
+  }
+
+  const recap=document.querySelector(".recapCard");
+  if(recap){
+    const title=recap.querySelector(".recapTitle span");
+    if(title)title.textContent="Live Tracking Saya";
+    const summary=$("picMonthSummary");
+    if(summary)summary.textContent=`${monthName} ${y} · ${me||"PIC"} · selesai bulan ini + sisa tasking saat ini`;
+
+    const list=$("picList");
+    if(list){
+      list.innerHTML=`
+        <div class="picRow">
+          <div class="avatar">${avatarHtml(profiles.find(p=>p.username===me)||{username:me})}</div>
+          <div style="flex:1;min-width:0">
+            <div class="picName">${esc(me||"PIC")}</div>
+            <div class="picMeta">${completedThisMonth} selesai bulan ini · ${remaining} tersisa</div>
+            <div style="height:5px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:7px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#a855f7,#c084fc);border-radius:99px"></div>
+            </div>
+          </div>
+          <div style="text-align:right;min-width:90px">
+            <div class="picCount">${completedThisMonth}</div>
+            <div class="muted" style="font-size:11px">bulan ini · ${pct}%</div>
+          </div>
+        </div>`;
+    }
+  }
+}
+
 function renderDashboard(){
  if($("picMonthSelect")&&!$("picMonthSelect").options.length)fillPicMonths();
+ if(isEmployee()){
+   renderEmployeeDashboard();
+   return;
+ }
  const total=tasks.length,done=tasks.filter(t=>t.completed).length,pct=total?Math.round(done/total*100):0,y=currentYear(),yt=tasks.filter(t=>yearOf(t)===y);
  const namedProjects=[...new Set(yt.map(projectName).filter(x=>x!=="Belum ditentukan"))];
  const pics=[...new Set(yt.map(t=>(t.pic||"").trim()).filter(Boolean))];
@@ -1455,6 +1546,13 @@ function openProject(folderId){
 function closeProject(){currentProject=null;$("projectView").classList.add("hide");$("projectView").classList.remove("compactProjectView");$("folderHome").classList.remove("hide");renderFolders()}
 
 function renderTeam(){
+ const addMemberBtn=document.querySelector('[data-action="add-member"]');
+ if(addMemberBtn)addMemberBtn.style.display=isEmployee()?"none":"";
+
+ document.querySelectorAll("button").forEach(b=>{
+   if((b.textContent||"").includes("Tambah Anggota")) b.style.display=isEmployee()?"none":"";
+ });
+
  const box=$("teamGrid");
  box.innerHTML="";
  const members=workspaceMembers.filter(m=>String(m.workspace_id)===String(currentWorkspaceId));
