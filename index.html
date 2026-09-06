@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#09090f">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<title>p3nabi'studio — Employee Dashboard v14</title>
+<title>p3nabi'studio — Employee Dashboard v15</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -1064,8 +1064,8 @@ function applyPermissions(){
   $("readonlyNote")?.classList.toggle("hide",admin);
   document.querySelectorAll(".navBtn").forEach(btn=>{
     const page=btn.dataset.page;
-    // Semua anggota dapat melihat Kerjaan, Calendar, Team, dan Settings.
-    // Dashboard tetap khusus Super Admin.
+    // Semua anggota dapat melihat Dashboard, Kerjaan, Calendar, Team, History, dan Settings.
+    // Fitur management/destruktif tetap dibatasi oleh role admin.
     const allowed=admin || ["dashboard","folders","calendar","team","history","settings"].includes(page);
     btn.classList.toggle("hide",!allowed);
   });
@@ -1848,7 +1848,9 @@ $("taskSave").onclick=async()=>{if(!canAdmin())return;if(!currentProject){$("tas
 
 document.querySelectorAll(".historyTab").forEach(btn=>btn.onclick=async()=>{historyFilter=btn.dataset.historyFilter||"trash";await renderHistory()});
 $("refreshHistory").onclick=async()=>{await loadHistory();await renderHistory()};
-function setPage(page){if(!canAdmin() && !["folders","calendar","team","history","settings"].includes(page)) page="folders";currentPage=page;
+function setPage(page){
+ if(!canAdmin() && !["dashboard","folders","calendar","team","history","settings"].includes(page)) page="folders";
+ currentPage=page;
  if(page==="dashboard")startDashboardLiveTracking();else stopDashboardLiveTracking();
  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page-"+page).classList.add("active");document.querySelectorAll(".navBtn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
  if(page==="dashboard"){$("pageTitle").textContent="Team Content 👋";$("pageSub").textContent="Recap project, pekerjaan, dan performa tim."}
