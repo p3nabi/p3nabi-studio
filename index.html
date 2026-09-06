@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#09090f">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<title>p3nabi'studio — Live PIC Recap v10</title>
+<title>p3nabi'studio — Live PIC Recap v11</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -1120,16 +1120,21 @@ function renderDashboard(){
  const picMonth=($("picMonthSelect")?.value||String(new Date().getMonth()+1).padStart(2,"0"));
 
  // LIVE MONTHLY PIC TRACKING:
- // - Source = every task in the active workspace.
- // - Month = task_date.
- // - PIC = pic.
- // - Status = completed.
+ // A monthly team recap should follow the month in which the work happened,
+ // not the folder/month label. Therefore:
+ // - task_date in the selected month = work scheduled for that month.
+ // - completed_at in the selected month = work actually completed that month.
+ // - A task is included when either date belongs to the selected month.
  // - folder_id is intentionally NOT used.
- const monthlyTasks=tasks.filter(t=>
-   t.workspace_id===currentWorkspaceId &&
-   String(t.task_date||"").slice(0,4)===String(y) &&
-   String(t.task_date||"").slice(5,7)===picMonth
- );
+ // This means checking an older task today immediately makes it visible in
+ // the current month's recap because completed_at becomes today's timestamp.
+ const monthKey=`${String(y)}-${picMonth}`;
+ const monthlyTasks=tasks.filter(t=>{
+   if(t.workspace_id!==currentWorkspaceId)return false;
+   const scheduledMonth=String(t.task_date||"").slice(0,7);
+   const completedMonth=String(t.completed_at||"").slice(0,7);
+   return scheduledMonth===monthKey || completedMonth===monthKey;
+ });
 
  const picMap={};
  monthlyTasks.forEach(t=>{
@@ -1143,7 +1148,7 @@ function renderDashboard(){
  const monthNames=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
  const monthName=monthNames[Number(picMonth)-1]||picMonth;
  const pms=$("picMonthSummary");
- if(pms)pms.textContent=`Live recap · ${monthName} ${y} · berdasarkan tanggal kerja, bukan folder`;
+ if(pms)pms.textContent=`Live recap · ${monthName} ${y} · tanggal kerja + pekerjaan yang selesai bulan ini`;
 
  const pl=$("picList");
  pl.innerHTML="";
